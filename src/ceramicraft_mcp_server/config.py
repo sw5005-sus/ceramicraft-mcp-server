@@ -28,8 +28,10 @@ class Settings(BaseSettings):
     USER_MS_HTTP: str = Field(default="http://user-ms-svc:8080")
 
     # OAuth / Zitadel
-    OAUTH_ISSUER_URL: str = Field(default="")
-    OAUTH_JWKS_URL: str = Field(default="")
+    ZITADEL_ISSUER: str = Field(default="https://cerami-t6ihrd.us1.zitadel.cloud")
+    ZITADEL_JWKS_URL: str = Field(
+        default="https://cerami-t6ihrd.us1.zitadel.cloud/oauth/v2/keys"
+    )
 
 
 @lru_cache
