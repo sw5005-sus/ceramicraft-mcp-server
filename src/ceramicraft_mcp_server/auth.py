@@ -9,6 +9,7 @@ from typing import Any
 
 import httpx
 import jwt
+import jwt.algorithms
 
 from ceramicraft_mcp_server.config import get_settings
 
@@ -107,10 +108,11 @@ async def verify_token(token: str) -> AuthenticatedUser:
         # Build the public key from JWK
         public_key = jwt.algorithms.RSAAlgorithm.from_jwk(key_data)
 
-        # Verify and decode
+        # Verify and decode — from_jwk returns RSAPrivateKey | RSAPublicKey,
+        # but JWK public keys always yield RSAPublicKey.
         payload = jwt.decode(
             token,
-            public_key,
+            public_key,  # type: ignore[arg-type]
             algorithms=[alg],
             issuer=settings.MCP_ZITADEL_ISSUER,
             options={"verify_aud": False},  # MCP tokens may not have audience
@@ -157,5 +159,5 @@ def _extract_roles(payload: dict[str, Any]) -> list[str]:
     """
     roles_claim = payload.get("urn:zitadel:iam:org:project:roles", {})
     if isinstance(roles_claim, dict):
-        return list(roles_claim.keys())
+        return [str(k) for k in roles_claim.keys()]
     return []
