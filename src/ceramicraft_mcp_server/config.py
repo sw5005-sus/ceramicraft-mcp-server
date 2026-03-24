@@ -27,11 +27,13 @@ class Settings(BaseSettings):
     # Internal HTTP endpoints (for services without gRPC)
     USER_MS_HTTP: str = Field(default="http://user-ms-svc:8080")
 
-    # OAuth / Zitadel
-    ZITADEL_ISSUER: str = Field(default="https://cerami-t6ihrd.us1.zitadel.cloud")
-    ZITADEL_JWKS_URL: str = Field(
+    # Zitadel (MCP-specific, prefixed to avoid conflict with other services)
+    MCP_ZITADEL_ISSUER: str = Field(default="https://cerami-t6ihrd.us1.zitadel.cloud")
+    MCP_ZITADEL_JWKS_URL: str = Field(
         default="https://cerami-t6ihrd.us1.zitadel.cloud/oauth/v2/keys"
     )
+    MCP_ZITADEL_CLIENT_ID: str = Field(default="")
+    MCP_ZITADEL_CLIENT_SECRET: str = Field(default="")
 
 
 @lru_cache

@@ -63,7 +63,7 @@ def _get_jwks_client() -> JWKSClient:
     global _jwks_client
     if _jwks_client is None:
         settings = get_settings()
-        _jwks_client = JWKSClient(settings.ZITADEL_JWKS_URL)
+        _jwks_client = JWKSClient(settings.MCP_ZITADEL_JWKS_URL)
     return _jwks_client
 
 
@@ -112,7 +112,7 @@ async def verify_token(token: str) -> AuthenticatedUser:
             token,
             public_key,
             algorithms=[alg],
-            issuer=settings.ZITADEL_ISSUER,
+            issuer=settings.MCP_ZITADEL_ISSUER,
             options={"verify_aud": False},  # MCP tokens may not have audience
         )
 

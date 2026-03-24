@@ -11,8 +11,8 @@ def test_settings_defaults():
     assert settings.PRODUCT_MS_GRPC == "product-ms-svc:5001"
     assert settings.LOG_MS_GRPC == "log-ms-svc:50051"
     assert settings.NOTIFICATION_MS_GRPC == "notification-ms-svc:50051"
-    assert "cerami-t6ihrd.us1.zitadel.cloud" in settings.ZITADEL_ISSUER
-    assert settings.ZITADEL_JWKS_URL.endswith("/oauth/v2/keys")
+    assert "cerami-t6ihrd.us1.zitadel.cloud" in settings.MCP_ZITADEL_ISSUER
+    assert settings.MCP_ZITADEL_JWKS_URL.endswith("/oauth/v2/keys")
 
 
 def test_get_settings_returns_settings_instance():
