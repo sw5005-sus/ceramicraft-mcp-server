@@ -55,7 +55,7 @@ uv sync
 
 ### Run locally
 ```bash
-uv run ceramicraft-mcp
+uv run python -m ceramicraft_mcp_server.serve
 ```
 
 ### Lint & Format
@@ -76,7 +76,7 @@ uv run pytest
 
 ### Test with MCP Inspector
 ```bash
-uv run ceramicraft-mcp &
+uv run python -m ceramicraft_mcp_server.serve &
 npx -y @modelcontextprotocol/inspector
 # Connect to http://localhost:8080/mcp
 ```
