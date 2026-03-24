@@ -7,7 +7,9 @@ def register_notification_tools(mcp: FastMCP) -> None:
     """Register notification tools on the MCP server."""
 
     @mcp.tool()
-    async def register_push_token(ctx: Context, token: str, device_type: str = "android") -> dict:
+    async def register_push_token(
+        ctx: Context, token: str, device_type: str = "android"
+    ) -> dict:
         """Register a device push notification token.
 
         Args:

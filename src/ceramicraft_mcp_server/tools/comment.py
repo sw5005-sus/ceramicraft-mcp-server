@@ -46,4 +46,9 @@ def register_comment_tools(mcp: FastMCP) -> None:
         if not 1 <= rating <= 5:
             raise ToolError("Rating must be between 1 and 5")
         # TODO: Call comment-ms gRPC AddComment
-        return {"comment_id": "", "product_id": product_id, "content": content, "rating": rating}
+        return {
+            "comment_id": "",
+            "product_id": product_id,
+            "content": content,
+            "rating": rating,
+        }
