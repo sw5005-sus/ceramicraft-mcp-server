@@ -1,6 +1,6 @@
 """Product-related MCP tools.
 
-PUBLIC tools: search_products, get_product, list_product_categories
+PUBLIC tools: search_products, get_product
 ADMIN tools: create_product, update_product, update_product_status,
              update_product_stock, get_merchant_product, list_merchant_products,
              get_image_upload_url
@@ -14,13 +14,7 @@ from ceramicraft_mcp_server.auth import require_admin
 from ceramicraft_mcp_server.config import get_settings
 from ceramicraft_mcp_server.http_client import get_http_client
 
-
-def _product_base() -> str:
-    return f"http://{get_settings().PRODUCT_MS_GRPC.replace(':5001', ':8080')}"
-
-
-def _prefix() -> str:
-    return "/product-ms/v1"
+PREFIX = "/product-ms/v1"
 
 
 def register_product_tools(mcp: FastMCP) -> None:
@@ -54,9 +48,9 @@ def register_product_tools(mcp: FastMCP) -> None:
             params["category"] = category
 
         return await client.call(
-            _product_base(),
+            get_settings().PRODUCT_MS_HTTP,
             "GET",
-            f"{_prefix()}/customer/products",
+            f"{PREFIX}/customer/products",
             params=params,
         )
 
@@ -72,9 +66,9 @@ def register_product_tools(mcp: FastMCP) -> None:
         """
         client = get_http_client()
         return await client.call(
-            _product_base(),
+            get_settings().PRODUCT_MS_HTTP,
             "GET",
-            f"{_prefix()}/customer/product/{product_id}",
+            f"{PREFIX}/customer/product/{product_id}",
         )
 
     # ─── ADMIN (Merchant) ──────────────────────────────────
@@ -83,22 +77,34 @@ def register_product_tools(mcp: FastMCP) -> None:
     async def create_product(
         ctx: Context,
         name: str,
-        description: str,
-        price: float,
+        desc: str,
+        price: int,
         category: str,
         stock: int,
-        images: list[str] | None = None,
+        pic_info: str = "",
+        material: str = "",
+        dimensions: str = "",
+        weight: str = "",
+        capacity: str = "",
+        care_instructions: str = "",
+        status: int = 0,
     ) -> dict[str, Any]:
         """Create a new product listing. Requires admin/merchant role.
 
         Args:
             ctx: MCP context (injected automatically).
             name: Product name.
-            description: Product description.
-            price: Product price.
+            desc: Product description.
+            price: Product price (integer, in cents).
             category: Product category.
             stock: Initial stock quantity.
-            images: List of image URLs.
+            pic_info: Product image info string.
+            material: Material composition.
+            dimensions: Product dimensions.
+            weight: Product weight.
+            capacity: Product capacity (e.g. for cups/vases).
+            care_instructions: Care/maintenance instructions.
+            status: 0=draft, 1=published.
 
         Returns:
             The created product details.
@@ -107,18 +113,29 @@ def register_product_tools(mcp: FastMCP) -> None:
         client = get_http_client()
         body: dict[str, Any] = {
             "name": name,
-            "description": description,
+            "desc": desc,
             "price": price,
             "category": category,
             "stock": stock,
+            "status": status,
         }
-        if images:
-            body["images"] = images
+        if pic_info:
+            body["pic_info"] = pic_info
+        if material:
+            body["material"] = material
+        if dimensions:
+            body["dimensions"] = dimensions
+        if weight:
+            body["weight"] = weight
+        if capacity:
+            body["capacity"] = capacity
+        if care_instructions:
+            body["care_instructions"] = care_instructions
 
         return await client.call(
-            _product_base(),
+            get_settings().PRODUCT_MS_HTTP,
             "POST",
-            f"{_prefix()}/merchant/products",
+            f"{PREFIX}/merchant/products",
             user_id=user.user_id_int,
             json_body=body,
         )
@@ -128,9 +145,15 @@ def register_product_tools(mcp: FastMCP) -> None:
         ctx: Context,
         product_id: int,
         name: str | None = None,
-        description: str | None = None,
-        price: float | None = None,
+        desc: str | None = None,
+        price: int | None = None,
         category: str | None = None,
+        pic_info: str | None = None,
+        material: str | None = None,
+        dimensions: str | None = None,
+        weight: str | None = None,
+        capacity: str | None = None,
+        care_instructions: str | None = None,
     ) -> dict[str, Any]:
         """Update an existing product. Requires admin/merchant role.
 
@@ -138,29 +161,47 @@ def register_product_tools(mcp: FastMCP) -> None:
             ctx: MCP context (injected automatically).
             product_id: The product ID to update.
             name: New product name.
-            description: New product description.
-            price: New price.
+            desc: New product description.
+            price: New price (integer, in cents).
             category: New category.
+            pic_info: New image info string.
+            material: New material.
+            dimensions: New dimensions.
+            weight: New weight.
+            capacity: New capacity.
+            care_instructions: New care instructions.
 
         Returns:
             Updated product details.
         """
         user = await require_admin(ctx)
         client = get_http_client()
-        body: dict[str, Any] = {}
+        body: dict[str, Any] = {"id": product_id}
         if name is not None:
             body["name"] = name
-        if description is not None:
-            body["description"] = description
+        if desc is not None:
+            body["desc"] = desc
         if price is not None:
             body["price"] = price
         if category is not None:
             body["category"] = category
+        if pic_info is not None:
+            body["pic_info"] = pic_info
+        if material is not None:
+            body["material"] = material
+        if dimensions is not None:
+            body["dimensions"] = dimensions
+        if weight is not None:
+            body["weight"] = weight
+        if capacity is not None:
+            body["capacity"] = capacity
+        if care_instructions is not None:
+            body["care_instructions"] = care_instructions
 
         return await client.call(
-            _product_base(),
+            get_settings().PRODUCT_MS_HTTP,
             "PUT",
-            f"{_prefix()}/merchant/products/{product_id}",
+            f"{PREFIX}/merchant/products/{product_id}",
             user_id=user.user_id_int,
             json_body=body,
         )
@@ -169,14 +210,14 @@ def register_product_tools(mcp: FastMCP) -> None:
     async def update_product_status(
         ctx: Context,
         product_id: int,
-        status: str,
+        status: int,
     ) -> dict[str, Any]:
         """Update product publish status. Requires admin/merchant role.
 
         Args:
             ctx: MCP context (injected automatically).
             product_id: The product ID.
-            status: New status (e.g. "published", "draft").
+            status: New status: 0=unpublished, 1=published.
 
         Returns:
             Update result.
@@ -184,9 +225,9 @@ def register_product_tools(mcp: FastMCP) -> None:
         user = await require_admin(ctx)
         client = get_http_client()
         return await client.call(
-            _product_base(),
+            get_settings().PRODUCT_MS_HTTP,
             "PATCH",
-            f"{_prefix()}/merchant/products/{product_id}/status",
+            f"{PREFIX}/merchant/products/{product_id}/status",
             user_id=user.user_id_int,
             json_body={"status": status},
         )
@@ -210,9 +251,9 @@ def register_product_tools(mcp: FastMCP) -> None:
         user = await require_admin(ctx)
         client = get_http_client()
         return await client.call(
-            _product_base(),
+            get_settings().PRODUCT_MS_HTTP,
             "PATCH",
-            f"{_prefix()}/merchant/products/{product_id}/stock",
+            f"{PREFIX}/merchant/products/{product_id}/stock",
             user_id=user.user_id_int,
             json_body={"stock": stock},
         )
@@ -234,9 +275,9 @@ def register_product_tools(mcp: FastMCP) -> None:
         user = await require_admin(ctx)
         client = get_http_client()
         return await client.call(
-            _product_base(),
+            get_settings().PRODUCT_MS_HTTP,
             "GET",
-            f"{_prefix()}/merchant/product/{product_id}",
+            f"{PREFIX}/merchant/product/{product_id}",
             user_id=user.user_id_int,
         )
 
@@ -246,6 +287,7 @@ def register_product_tools(mcp: FastMCP) -> None:
         keyword: str = "",
         category: str = "",
         offset: int = 0,
+        order_by: int = 0,
     ) -> dict[str, Any]:
         """List products from merchant view. Requires admin/merchant role.
 
@@ -254,22 +296,23 @@ def register_product_tools(mcp: FastMCP) -> None:
             keyword: Search keyword.
             category: Filter by category.
             offset: Pagination offset.
+            order_by: Sort order: 0=newest first, 1=oldest first.
 
         Returns:
             Product list with merchant-specific fields.
         """
         user = await require_admin(ctx)
         client = get_http_client()
-        params: dict[str, Any] = {"offset": offset}
+        params: dict[str, Any] = {"offset": offset, "order_by": order_by}
         if keyword:
             params["keyword"] = keyword
         if category:
             params["category"] = category
 
         return await client.call(
-            _product_base(),
+            get_settings().PRODUCT_MS_HTTP,
             "GET",
-            f"{_prefix()}/merchant/products",
+            f"{PREFIX}/merchant/products",
             user_id=user.user_id_int,
             params=params,
         )
@@ -277,23 +320,23 @@ def register_product_tools(mcp: FastMCP) -> None:
     @mcp.tool()
     async def get_image_upload_url(
         ctx: Context,
-        file_names: list[str],
+        image_type: str = "jpg",
     ) -> dict[str, Any]:
-        """Get presigned URLs for product image upload. Requires admin/merchant role.
+        """Get a presigned URL for product image upload. Requires admin/merchant role.
 
         Args:
             ctx: MCP context (injected automatically).
-            file_names: List of file names to upload.
+            image_type: Image format: jpg, png, or jpeg.
 
         Returns:
-            Presigned upload URLs.
+            Presigned upload URL.
         """
         user = await require_admin(ctx)
         client = get_http_client()
         return await client.call(
-            _product_base(),
+            get_settings().PRODUCT_MS_HTTP,
             "POST",
-            f"{_prefix()}/merchant/images/upload-urls",
+            f"{PREFIX}/merchant/images/upload-urls",
             user_id=user.user_id_int,
-            json_body={"file_names": file_names},
+            json_body={"image_type": image_type},
         )

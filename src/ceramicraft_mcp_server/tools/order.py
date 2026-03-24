@@ -12,13 +12,7 @@ from ceramicraft_mcp_server.auth import require_admin, require_user
 from ceramicraft_mcp_server.config import get_settings
 from ceramicraft_mcp_server.http_client import get_http_client
 
-
-def _order_base() -> str:
-    return f"http://{get_settings().ORDER_MS_GRPC.replace(':5001', ':8080')}"
-
-
-def _prefix() -> str:
-    return "/order-ms/v1"
+PREFIX = "/order-ms/v1"
 
 
 def register_order_tools(mcp: FastMCP) -> None:
@@ -27,22 +21,54 @@ def register_order_tools(mcp: FastMCP) -> None:
     # ─── USER ──────────────────────────────────────────────
 
     @mcp.tool()
-    async def create_order(ctx: Context) -> dict[str, Any]:
-        """Create an order from the user's cart. Requires authentication.
+    async def create_order(
+        ctx: Context,
+        receiver_first_name: str,
+        receiver_last_name: str,
+        receiver_phone: str,
+        receiver_address: str,
+        receiver_country: str = "",
+        receiver_zip_code: int = 0,
+        remark: str = "",
+    ) -> dict[str, Any]:
+        """Create an order. Requires authentication.
+
+        The order items come from the user's selected cart items.
 
         Args:
             ctx: MCP context (injected automatically).
+            receiver_first_name: Receiver's first name.
+            receiver_last_name: Receiver's last name.
+            receiver_phone: Receiver's phone number.
+            receiver_address: Receiver's address.
+            receiver_country: Receiver's country.
+            receiver_zip_code: Receiver's postal code.
+            remark: Order remark/notes.
 
         Returns:
             Created order details including order number.
         """
         user = await require_user(ctx)
         client = get_http_client()
+        body: dict[str, Any] = {
+            "receiver_first_name": receiver_first_name,
+            "receiver_last_name": receiver_last_name,
+            "receiver_phone": receiver_phone,
+            "receiver_address": receiver_address,
+        }
+        if receiver_country:
+            body["receiver_country"] = receiver_country
+        if receiver_zip_code:
+            body["receiver_zip_code"] = receiver_zip_code
+        if remark:
+            body["remark"] = remark
+
         return await client.call(
-            _order_base(),
+            get_settings().ORDER_MS_HTTP,
             "POST",
-            f"{_prefix()}/customer/orders",
+            f"{PREFIX}/customer/orders",
             user_id=user.user_id_int,
+            json_body=body,
         )
 
     @mcp.tool()
@@ -50,6 +76,8 @@ def register_order_tools(mcp: FastMCP) -> None:
         ctx: Context,
         limit: int = 20,
         offset: int = 0,
+        start_time: str = "",
+        end_time: str = "",
     ) -> dict[str, Any]:
         """List the authenticated user's orders.
 
@@ -57,18 +85,26 @@ def register_order_tools(mcp: FastMCP) -> None:
             ctx: MCP context (injected automatically).
             limit: Maximum number of orders to return.
             offset: Pagination offset.
+            start_time: Filter orders created after this time (ISO 8601).
+            end_time: Filter orders created before this time (ISO 8601).
 
         Returns:
             A dict with orders and total count.
         """
         user = await require_user(ctx)
         client = get_http_client()
+        body: dict[str, Any] = {"limit": limit, "offset": offset}
+        if start_time:
+            body["start_time"] = start_time
+        if end_time:
+            body["end_time"] = end_time
+
         return await client.call(
-            _order_base(),
+            get_settings().ORDER_MS_HTTP,
             "POST",
-            f"{_prefix()}/customer/orders/list",
+            f"{PREFIX}/customer/orders/list",
             user_id=user.user_id_int,
-            json_body={"limit": limit, "offset": offset},
+            json_body=body,
         )
 
     @mcp.tool()
@@ -85,9 +121,9 @@ def register_order_tools(mcp: FastMCP) -> None:
         user = await require_user(ctx)
         client = get_http_client()
         return await client.call(
-            _order_base(),
+            get_settings().ORDER_MS_HTTP,
             "GET",
-            f"{_prefix()}/customer/orders/{order_no}",
+            f"{PREFIX}/customer/orders/{order_no}",
             user_id=user.user_id_int,
         )
 
@@ -105,10 +141,11 @@ def register_order_tools(mcp: FastMCP) -> None:
         user = await require_user(ctx)
         client = get_http_client()
         return await client.call(
-            _order_base(),
+            get_settings().ORDER_MS_HTTP,
             "PATCH",
-            f"{_prefix()}/customer/orders/{order_no}/confirm",
+            f"{PREFIX}/customer/orders/{order_no}/confirm",
             user_id=user.user_id_int,
+            json_body={"order_no": order_no},
         )
 
     # ─── ADMIN (Merchant) ──────────────────────────────────
@@ -126,9 +163,9 @@ def register_order_tools(mcp: FastMCP) -> None:
         user = await require_admin(ctx)
         client = get_http_client()
         return await client.call(
-            _order_base(),
+            get_settings().ORDER_MS_HTTP,
             "GET",
-            f"{_prefix()}/merchant/order-stats",
+            f"{PREFIX}/merchant/order-stats",
             user_id=user.user_id_int,
         )
 
@@ -137,6 +174,11 @@ def register_order_tools(mcp: FastMCP) -> None:
         ctx: Context,
         limit: int = 20,
         offset: int = 0,
+        order_no: str = "",
+        order_status: int | None = None,
+        user_id: int | None = None,
+        start_time: str = "",
+        end_time: str = "",
     ) -> dict[str, Any]:
         """List all orders from merchant view. Requires admin/merchant role.
 
@@ -144,18 +186,35 @@ def register_order_tools(mcp: FastMCP) -> None:
             ctx: MCP context (injected automatically).
             limit: Maximum number of orders.
             offset: Pagination offset.
+            order_no: Filter by order number.
+            order_status: Filter by order status.
+            user_id: Filter by customer user ID.
+            start_time: Filter by creation time start (ISO 8601).
+            end_time: Filter by creation time end (ISO 8601).
 
         Returns:
             Orders list with merchant-specific info.
         """
-        user = await require_admin(ctx)
+        admin = await require_admin(ctx)
         client = get_http_client()
+        body: dict[str, Any] = {"limit": limit, "offset": offset}
+        if order_no:
+            body["order_no"] = order_no
+        if order_status is not None:
+            body["order_status"] = order_status
+        if user_id is not None:
+            body["user_id"] = user_id
+        if start_time:
+            body["start_time"] = start_time
+        if end_time:
+            body["end_time"] = end_time
+
         return await client.call(
-            _order_base(),
+            get_settings().ORDER_MS_HTTP,
             "POST",
-            f"{_prefix()}/merchant/orders/list",
-            user_id=user.user_id_int,
-            json_body={"limit": limit, "offset": offset},
+            f"{PREFIX}/merchant/orders/list",
+            user_id=admin.user_id_int,
+            json_body=body,
         )
 
     @mcp.tool()
@@ -175,9 +234,9 @@ def register_order_tools(mcp: FastMCP) -> None:
         user = await require_admin(ctx)
         client = get_http_client()
         return await client.call(
-            _order_base(),
+            get_settings().ORDER_MS_HTTP,
             "GET",
-            f"{_prefix()}/merchant/orders/{order_no}",
+            f"{PREFIX}/merchant/orders/{order_no}",
             user_id=user.user_id_int,
         )
 
@@ -185,12 +244,14 @@ def register_order_tools(mcp: FastMCP) -> None:
     async def ship_order(
         ctx: Context,
         order_no: str,
+        tracking_no: str,
     ) -> dict[str, Any]:
         """Mark an order as shipped. Requires admin/merchant role.
 
         Args:
             ctx: MCP context (injected automatically).
             order_no: The order number to ship.
+            tracking_no: Shipping tracking number.
 
         Returns:
             Shipping result.
@@ -198,8 +259,9 @@ def register_order_tools(mcp: FastMCP) -> None:
         user = await require_admin(ctx)
         client = get_http_client()
         return await client.call(
-            _order_base(),
+            get_settings().ORDER_MS_HTTP,
             "PATCH",
-            f"{_prefix()}/merchant/orders/{order_no}/ship",
+            f"{PREFIX}/merchant/orders/{order_no}/ship",
             user_id=user.user_id_int,
+            json_body={"tracking_no": tracking_no},
         )

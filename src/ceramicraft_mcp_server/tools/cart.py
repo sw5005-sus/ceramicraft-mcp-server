@@ -1,4 +1,7 @@
-"""Cart-related MCP tools (all require USER auth)."""
+"""Cart-related MCP tools (all require USER auth).
+
+All cart endpoints are under product-ms.
+"""
 
 from typing import Any
 
@@ -8,13 +11,7 @@ from ceramicraft_mcp_server.auth import require_user
 from ceramicraft_mcp_server.config import get_settings
 from ceramicraft_mcp_server.http_client import get_http_client
 
-
-def _product_base() -> str:
-    return f"http://{get_settings().PRODUCT_MS_GRPC.replace(':5001', ':8080')}"
-
-
-def _prefix() -> str:
-    return "/product-ms/v1"
+PREFIX = "/product-ms/v1"
 
 
 def register_cart_tools(mcp: FastMCP) -> None:
@@ -33,9 +30,9 @@ def register_cart_tools(mcp: FastMCP) -> None:
         user = await require_user(ctx)
         client = get_http_client()
         return await client.call(
-            _product_base(),
+            get_settings().PRODUCT_MS_HTTP,
             "GET",
-            f"{_prefix()}/customer/cart",
+            f"{PREFIX}/customer/cart",
             user_id=user.user_id_int,
         )
 
@@ -44,13 +41,15 @@ def register_cart_tools(mcp: FastMCP) -> None:
         ctx: Context,
         product_id: int,
         quantity: int = 1,
+        selected: bool = True,
     ) -> dict[str, Any]:
         """Add an item to the user's cart.
 
         Args:
             ctx: MCP context (injected automatically).
             product_id: Product to add.
-            quantity: How many to add (default 1).
+            quantity: How many to add (minimum 1).
+            selected: Whether the item is selected for checkout.
 
         Returns:
             Created cart item details.
@@ -58,37 +57,49 @@ def register_cart_tools(mcp: FastMCP) -> None:
         user = await require_user(ctx)
         client = get_http_client()
         return await client.call(
-            _product_base(),
+            get_settings().PRODUCT_MS_HTTP,
             "POST",
-            f"{_prefix()}/customer/cart/items",
+            f"{PREFIX}/customer/cart/items",
             user_id=user.user_id_int,
-            json_body={"product_id": product_id, "quantity": quantity},
+            json_body={
+                "product_id": product_id,
+                "quantity": quantity,
+                "selected": selected,
+            },
         )
 
     @mcp.tool()
     async def update_cart_item(
         ctx: Context,
         item_id: int,
-        quantity: int,
+        quantity: int | None = None,
+        selected: bool | None = None,
     ) -> dict[str, Any]:
-        """Update quantity of a cart item.
+        """Update a cart item (quantity or selection).
 
         Args:
             ctx: MCP context (injected automatically).
             item_id: Cart item ID to update.
-            quantity: New quantity.
+            quantity: New quantity (minimum 1).
+            selected: New selection state.
 
         Returns:
             Updated cart item.
         """
         user = await require_user(ctx)
         client = get_http_client()
+        body: dict[str, Any] = {}
+        if quantity is not None:
+            body["quantity"] = quantity
+        if selected is not None:
+            body["selected"] = selected
+
         return await client.call(
-            _product_base(),
+            get_settings().PRODUCT_MS_HTTP,
             "PUT",
-            f"{_prefix()}/customer/cart/items/{item_id}",
+            f"{PREFIX}/customer/cart/items/{item_id}",
             user_id=user.user_id_int,
-            json_body={"quantity": quantity},
+            json_body=body,
         )
 
     @mcp.tool()
@@ -108,9 +119,9 @@ def register_cart_tools(mcp: FastMCP) -> None:
         user = await require_user(ctx)
         client = get_http_client()
         return await client.call(
-            _product_base(),
+            get_settings().PRODUCT_MS_HTTP,
             "DELETE",
-            f"{_prefix()}/customer/cart/items/{item_id}",
+            f"{PREFIX}/customer/cart/items/{item_id}",
             user_id=user.user_id_int,
         )
 
@@ -127,8 +138,8 @@ def register_cart_tools(mcp: FastMCP) -> None:
         user = await require_user(ctx)
         client = get_http_client()
         return await client.call(
-            _product_base(),
+            get_settings().PRODUCT_MS_HTTP,
             "GET",
-            f"{_prefix()}/customer/cart/price-estimate",
+            f"{PREFIX}/customer/cart/price-estimate",
             user_id=user.user_id_int,
         )

@@ -15,17 +15,19 @@ class Settings(BaseSettings):
     MCP_SERVER_HOST: str = "0.0.0.0"
     MCP_SERVER_PORT: int = 8080
 
-    # Internal service endpoints (cluster DNS)
-    PRODUCT_MS_GRPC: str = Field(default="product-ms-svc:5001")
-    ORDER_MS_GRPC: str = Field(default="order-ms-svc:5001")
-    USER_MS_GRPC: str = Field(default="user-ms-svc:5001")
-    COMMENT_MS_GRPC: str = Field(default="comment-ms-svc:5001")
-    PAYMENT_MS_GRPC: str = Field(default="payment-ms-svc:5001")
+    # Internal gRPC endpoints (Python services)
     NOTIFICATION_MS_GRPC: str = Field(default="notification-ms-svc:50051")
     LOG_MS_GRPC: str = Field(default="log-ms-svc:50051")
 
-    # Internal HTTP endpoints (for services without gRPC)
+    # Internal HTTP endpoints (Go services, port 8080)
+    PRODUCT_MS_HTTP: str = Field(default="http://product-ms-svc:8080")
+    ORDER_MS_HTTP: str = Field(default="http://order-ms-svc:8080")
     USER_MS_HTTP: str = Field(default="http://user-ms-svc:8080")
+    COMMENT_MS_HTTP: str = Field(default="http://comment-ms-svc:8080")
+    PAYMENT_MS_HTTP: str = Field(default="http://payment-ms-svc:8080")
+
+    # Internal HTTP endpoints (Python services, port 8080)
+    NOTIFICATION_MS_HTTP: str = Field(default="http://notification-ms-svc:8080")
 
     # Zitadel (MCP-specific, prefixed to avoid conflict with other services)
     MCP_ZITADEL_ISSUER: str = Field(default="https://cerami-t6ihrd.us1.zitadel.cloud")

@@ -14,13 +14,7 @@ from ceramicraft_mcp_server.auth import require_admin, require_user
 from ceramicraft_mcp_server.config import get_settings
 from ceramicraft_mcp_server.http_client import get_http_client
 
-
-def _comment_base() -> str:
-    return f"http://{get_settings().COMMENT_MS_GRPC.replace(':5001', ':8080')}"
-
-
-def _prefix() -> str:
-    return "/comment-ms/v1"
+PREFIX = "/comment-ms/v1"
 
 
 def register_comment_tools(mcp: FastMCP) -> None:
@@ -40,9 +34,9 @@ def register_comment_tools(mcp: FastMCP) -> None:
         """
         client = get_http_client()
         return await client.call(
-            _comment_base(),
+            get_settings().COMMENT_MS_HTTP,
             "GET",
-            f"{_prefix()}/customer/reviews/product/{product_id}",
+            f"{PREFIX}/customer/reviews/product/{product_id}",
         )
 
     # ─── USER ──────────────────────────────────────────────
@@ -60,9 +54,9 @@ def register_comment_tools(mcp: FastMCP) -> None:
         user = await require_user(ctx)
         client = get_http_client()
         return await client.call(
-            _comment_base(),
+            get_settings().COMMENT_MS_HTTP,
             "GET",
-            f"{_prefix()}/customer/reviews/user",
+            f"{PREFIX}/customer/reviews/user",
             user_id=user.user_id_int,
         )
 
@@ -103,9 +97,9 @@ def register_comment_tools(mcp: FastMCP) -> None:
             body["pic_info"] = pic_info
 
         return await client.call(
-            _comment_base(),
+            get_settings().COMMENT_MS_HTTP,
             "POST",
-            f"{_prefix()}/customer/reviews",
+            f"{PREFIX}/customer/reviews",
             user_id=user.user_id_int,
             json_body=body,
         )
@@ -124,9 +118,9 @@ def register_comment_tools(mcp: FastMCP) -> None:
         user = await require_user(ctx)
         client = get_http_client()
         return await client.call(
-            _comment_base(),
+            get_settings().COMMENT_MS_HTTP,
             "POST",
-            f"{_prefix()}/customer/reviews/{review_id}/like",
+            f"{PREFIX}/customer/reviews/{review_id}/like",
             user_id=user.user_id_int,
         )
 
@@ -151,9 +145,9 @@ def register_comment_tools(mcp: FastMCP) -> None:
         user = await require_admin(ctx)
         client = get_http_client()
         return await client.call(
-            _comment_base(),
+            get_settings().COMMENT_MS_HTTP,
             "POST",
-            f"{_prefix()}/merchant/reviews/list",
+            f"{PREFIX}/merchant/reviews/list",
             user_id=user.user_id_int,
             json_body={"product_id": product_id, "stars": stars},
         )
@@ -172,9 +166,9 @@ def register_comment_tools(mcp: FastMCP) -> None:
         await require_admin(ctx)
         client = get_http_client()
         return await client.call(
-            _comment_base(),
+            get_settings().COMMENT_MS_HTTP,
             "DELETE",
-            f"{_prefix()}/merchant/reviews/{review_id}",
+            f"{PREFIX}/merchant/reviews/{review_id}",
         )
 
     @mcp.tool()
@@ -191,9 +185,9 @@ def register_comment_tools(mcp: FastMCP) -> None:
         user = await require_admin(ctx)
         client = get_http_client()
         return await client.call(
-            _comment_base(),
+            get_settings().COMMENT_MS_HTTP,
             "PATCH",
-            f"{_prefix()}/merchant/reviews/{review_id}",
+            f"{PREFIX}/merchant/reviews/{review_id}",
             user_id=user.user_id_int,
             json_body={"review_id": review_id},
         )
@@ -217,9 +211,9 @@ def register_comment_tools(mcp: FastMCP) -> None:
         user = await require_admin(ctx)
         client = get_http_client()
         return await client.call(
-            _comment_base(),
+            get_settings().COMMENT_MS_HTTP,
             "POST",
-            f"{_prefix()}/merchant/reviews/{review_id}/replies",
+            f"{PREFIX}/merchant/reviews/{review_id}/replies",
             user_id=user.user_id_int,
             json_body={"content": content, "parentID": review_id},
         )

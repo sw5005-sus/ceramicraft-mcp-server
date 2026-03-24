@@ -12,13 +12,7 @@ from ceramicraft_mcp_server.auth import require_admin, require_user
 from ceramicraft_mcp_server.config import get_settings
 from ceramicraft_mcp_server.http_client import get_http_client
 
-
-def _notification_http_base() -> str:
-    return f"http://{get_settings().NOTIFICATION_MS_GRPC.replace(':50051', ':8080')}"
-
-
-def _prefix() -> str:
-    return "/notification-ms/v1"
+PREFIX = "/notification-ms/v1"
 
 
 def register_notification_tools(mcp: FastMCP) -> None:
@@ -43,9 +37,9 @@ def register_notification_tools(mcp: FastMCP) -> None:
         user = await require_user(ctx)
         client = get_http_client()
         return await client.call(
-            _notification_http_base(),
+            get_settings().NOTIFICATION_MS_HTTP,
             "POST",
-            f"{_prefix()}/push-token",
+            f"{PREFIX}/push-token",
             user_id=user.user_id_int,
             json_body={"token": token, "device_type": device_type},
         )
@@ -53,19 +47,19 @@ def register_notification_tools(mcp: FastMCP) -> None:
     @mcp.tool()
     async def send_push_notification(
         ctx: Context,
-        user_id: int,
+        target_user_id: int,
         title: str,
         body: str,
         data: dict[str, str] | None = None,
     ) -> dict[str, Any]:
         """Send a push notification to a user. Requires admin role.
 
-        This uses gRPC internally to call notification-ms SendUserPush.
-        Currently falls back to HTTP until gRPC client is implemented.
+        This will use gRPC to call notification-ms SendUserPush.
+        Currently returns a placeholder until gRPC client is implemented.
 
         Args:
             ctx: MCP context (injected automatically).
-            user_id: Target user ID to send notification to.
+            target_user_id: Target user ID to send notification to.
             title: Notification title.
             body: Notification body text.
             data: Optional key-value data payload.
@@ -75,11 +69,10 @@ def register_notification_tools(mcp: FastMCP) -> None:
         """
         await require_admin(ctx)
         # TODO: Replace with gRPC call to notification-ms SendUserPush
-        # For now, return a placeholder indicating gRPC not yet connected
         return {
             "success": False,
             "message": "gRPC client not yet implemented. Use direct gRPC call.",
-            "target_user_id": user_id,
+            "target_user_id": target_user_id,
             "title": title,
             "body": body,
             "data": data or {},

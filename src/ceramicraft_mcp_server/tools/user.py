@@ -9,10 +9,6 @@ from ceramicraft_mcp_server.config import get_settings
 from ceramicraft_mcp_server.http_client import get_http_client
 
 
-def _user_base() -> str:
-    return get_settings().USER_MS_HTTP
-
-
 def register_user_tools(mcp: FastMCP) -> None:
     """Register user tools on the MCP server."""
 
@@ -24,12 +20,12 @@ def register_user_tools(mcp: FastMCP) -> None:
             ctx: MCP context (injected automatically).
 
         Returns:
-            User profile including name, email, phone, and avatar.
+            User profile including name, email, and avatar.
         """
         user = await require_user(ctx)
         client = get_http_client()
         return await client.call(
-            _user_base(),
+            get_settings().USER_MS_HTTP,
             "GET",
             "/user-ms/v1/customer/users/self",
             user_id=user.user_id_int,
@@ -39,7 +35,7 @@ def register_user_tools(mcp: FastMCP) -> None:
     async def update_my_profile(
         ctx: Context,
         name: str | None = None,
-        phone: str | None = None,
+        email: str | None = None,
         avatar: str | None = None,
     ) -> dict[str, Any]:
         """Update the authenticated user's profile.
@@ -47,7 +43,7 @@ def register_user_tools(mcp: FastMCP) -> None:
         Args:
             ctx: MCP context (injected automatically).
             name: New display name.
-            phone: New phone number.
+            email: New email address.
             avatar: New avatar URL.
 
         Returns:
@@ -58,13 +54,13 @@ def register_user_tools(mcp: FastMCP) -> None:
         body: dict[str, Any] = {}
         if name is not None:
             body["name"] = name
-        if phone is not None:
-            body["phone"] = phone
+        if email is not None:
+            body["email"] = email
         if avatar is not None:
             body["avatar"] = avatar
 
         return await client.call(
-            _user_base(),
+            get_settings().USER_MS_HTTP,
             "PUT",
             "/user-ms/v1/customer/users/self",
             user_id=user.user_id_int,
@@ -84,7 +80,7 @@ def register_user_tools(mcp: FastMCP) -> None:
         user = await require_user(ctx)
         client = get_http_client()
         return await client.call(
-            _user_base(),
+            get_settings().USER_MS_HTTP,
             "GET",
             "/user-ms/v1/customer/users/self/addresses",
             user_id=user.user_id_int,
@@ -93,24 +89,28 @@ def register_user_tools(mcp: FastMCP) -> None:
     @mcp.tool()
     async def create_address(
         ctx: Context,
-        name: str,
-        phone: str,
-        address: str,
+        first_name: str,
+        last_name: str,
+        contact_phone: str,
+        detail: str,
         city: str = "",
         province: str = "",
-        postal_code: str = "",
+        country: str = "",
+        zip_code: str = "",
         is_default: bool = False,
     ) -> dict[str, Any]:
         """Create a new shipping address.
 
         Args:
             ctx: MCP context (injected automatically).
-            name: Recipient name.
-            phone: Recipient phone.
-            address: Street address.
+            first_name: Recipient first name.
+            last_name: Recipient last name.
+            contact_phone: Recipient phone number.
+            detail: Street address / address detail.
             city: City.
             province: Province/State.
-            postal_code: Postal/ZIP code.
+            country: Country.
+            zip_code: Postal/ZIP code.
             is_default: Set as default address.
 
         Returns:
@@ -118,32 +118,42 @@ def register_user_tools(mcp: FastMCP) -> None:
         """
         user = await require_user(ctx)
         client = get_http_client()
+        body: dict[str, Any] = {
+            "first_name": first_name,
+            "last_name": last_name,
+            "contact_phone": contact_phone,
+            "detail": detail,
+            "is_default": is_default,
+        }
+        if city:
+            body["city"] = city
+        if province:
+            body["province"] = province
+        if country:
+            body["country"] = country
+        if zip_code:
+            body["zip_code"] = zip_code
+
         return await client.call(
-            _user_base(),
+            get_settings().USER_MS_HTTP,
             "POST",
             "/user-ms/v1/customer/users/self/addresses",
             user_id=user.user_id_int,
-            json_body={
-                "name": name,
-                "phone": phone,
-                "address": address,
-                "city": city,
-                "province": province,
-                "postal_code": postal_code,
-                "is_default": is_default,
-            },
+            json_body=body,
         )
 
     @mcp.tool()
     async def update_address(
         ctx: Context,
         address_id: int,
-        name: str | None = None,
-        phone: str | None = None,
-        address: str | None = None,
+        first_name: str | None = None,
+        last_name: str | None = None,
+        contact_phone: str | None = None,
+        detail: str | None = None,
         city: str | None = None,
         province: str | None = None,
-        postal_code: str | None = None,
+        country: str | None = None,
+        zip_code: str | None = None,
         is_default: bool | None = None,
     ) -> dict[str, Any]:
         """Update an existing shipping address.
@@ -151,12 +161,14 @@ def register_user_tools(mcp: FastMCP) -> None:
         Args:
             ctx: MCP context (injected automatically).
             address_id: Address ID to update.
-            name: New recipient name.
-            phone: New recipient phone.
-            address: New street address.
+            first_name: New recipient first name.
+            last_name: New recipient last name.
+            contact_phone: New phone number.
+            detail: New street address.
             city: New city.
             province: New province.
-            postal_code: New postal code.
+            country: New country.
+            zip_code: New postal code.
             is_default: Set as default address.
 
         Returns:
@@ -165,23 +177,27 @@ def register_user_tools(mcp: FastMCP) -> None:
         user = await require_user(ctx)
         client = get_http_client()
         body: dict[str, Any] = {}
-        if name is not None:
-            body["name"] = name
-        if phone is not None:
-            body["phone"] = phone
-        if address is not None:
-            body["address"] = address
+        if first_name is not None:
+            body["first_name"] = first_name
+        if last_name is not None:
+            body["last_name"] = last_name
+        if contact_phone is not None:
+            body["contact_phone"] = contact_phone
+        if detail is not None:
+            body["detail"] = detail
         if city is not None:
             body["city"] = city
         if province is not None:
             body["province"] = province
-        if postal_code is not None:
-            body["postal_code"] = postal_code
+        if country is not None:
+            body["country"] = country
+        if zip_code is not None:
+            body["zip_code"] = zip_code
         if is_default is not None:
             body["is_default"] = is_default
 
         return await client.call(
-            _user_base(),
+            get_settings().USER_MS_HTTP,
             "PUT",
             f"/user-ms/v1/customer/users/self/addresses/{address_id}",
             user_id=user.user_id_int,
@@ -202,7 +218,7 @@ def register_user_tools(mcp: FastMCP) -> None:
         user = await require_user(ctx)
         client = get_http_client()
         return await client.call(
-            _user_base(),
+            get_settings().USER_MS_HTTP,
             "DELETE",
             f"/user-ms/v1/customer/users/self/addresses/{address_id}",
             user_id=user.user_id_int,
