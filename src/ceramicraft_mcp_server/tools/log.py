@@ -54,6 +54,8 @@ def register_log_tools(mcp: FastMCP) -> None:
         role: str | None = None,
         start_time: str | None = None,
         end_time: str | None = None,
+        occurred_at_start: str | None = None,
+        occurred_at_end: str | None = None,
         limit: int = 50,
         offset: int = 0,
     ) -> dict[str, Any]:
@@ -64,8 +66,10 @@ def register_log_tools(mcp: FastMCP) -> None:
             actor_id: Filter by actor ID.
             service: Filter by service name.
             role: Filter by actor role.
-            start_time: Start time filter (ISO 8601).
-            end_time: End time filter (ISO 8601).
+            start_time: Filter by log write time start (ISO 8601).
+            end_time: Filter by log write time end (ISO 8601).
+            occurred_at_start: Filter by event time start (ISO 8601).
+            occurred_at_end: Filter by event time end (ISO 8601).
             limit: Maximum number of logs to return.
             offset: Pagination offset.
 
@@ -95,7 +99,7 @@ def register_log_tools(mcp: FastMCP) -> None:
             end_time: End time filter (ISO 8601).
 
         Returns:
-            Verification result including validity status.
+            Verification result including validity status and failure details.
         """
         await require_admin(ctx)
         # TODO: Replace with gRPC call to log-ms VerifyAuditLogChain
@@ -103,4 +107,5 @@ def register_log_tools(mcp: FastMCP) -> None:
             "success": False,
             "message": "gRPC client not yet implemented.",
             "is_valid": False,
+            "failed_log_id": "",
         }

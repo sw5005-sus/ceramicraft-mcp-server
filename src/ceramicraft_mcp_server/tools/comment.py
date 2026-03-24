@@ -122,6 +122,7 @@ def register_comment_tools(mcp: FastMCP) -> None:
             "POST",
             f"{PREFIX}/customer/reviews/{review_id}/like",
             user_id=user.user_id_int,
+            json_body={"review_id": review_id},
         )
 
     # ─── ADMIN (Merchant) ──────────────────────────────────
@@ -163,21 +164,27 @@ def register_comment_tools(mcp: FastMCP) -> None:
         Returns:
             Deletion result.
         """
-        await require_admin(ctx)
+        user = await require_admin(ctx)
         client = get_http_client()
         return await client.call(
             get_settings().COMMENT_MS_HTTP,
             "DELETE",
             f"{PREFIX}/merchant/reviews/{review_id}",
+            user_id=user.user_id_int,
         )
 
     @mcp.tool()
-    async def pin_review(ctx: Context, review_id: str) -> dict[str, Any]:
-        """Pin a review to the top. Requires admin/merchant role.
+    async def pin_review(
+        ctx: Context,
+        review_id: str,
+        is_pinned: bool = True,
+    ) -> dict[str, Any]:
+        """Pin or unpin a review. Requires admin/merchant role.
 
         Args:
             ctx: MCP context (injected automatically).
-            review_id: The review ID to pin.
+            review_id: The review ID to pin/unpin.
+            is_pinned: True to pin, False to unpin.
 
         Returns:
             Pin result.
@@ -189,7 +196,7 @@ def register_comment_tools(mcp: FastMCP) -> None:
             "PATCH",
             f"{PREFIX}/merchant/reviews/{review_id}",
             user_id=user.user_id_int,
-            json_body={"review_id": review_id},
+            json_body={"is_pinned": is_pinned},
         )
 
     @mcp.tool()

@@ -9,6 +9,7 @@ import logging
 from typing import Any
 
 import httpx
+from mcp.server.fastmcp.exceptions import ToolError
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +35,7 @@ class InternalHTTPClient:
         params: dict[str, Any] | None = None,
         json_body: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
-        """Make an HTTP request to an internal Go service.
+        """Make an HTTP request to an internal service.
 
         Args:
             base_url: Service base URL, e.g. "http://product-ms-svc:8080".
@@ -48,7 +49,7 @@ class InternalHTTPClient:
             Parsed JSON response as a dict.
 
         Raises:
-            httpx.HTTPStatusError: On 4xx/5xx responses.
+            ToolError: On HTTP errors (4xx/5xx) or connection failures.
         """
         headers: dict[str, str] = {}
         if user_id is not None:
@@ -59,20 +60,52 @@ class InternalHTTPClient:
 
         logger.debug("Internal HTTP %s %s user_id=%s", method, url, user_id)
 
-        response = await client.request(
-            method=method,
-            url=url,
-            params=params,
-            json=json_body,
-            headers=headers,
-        )
-        response.raise_for_status()
+        try:
+            response = await client.request(
+                method=method,
+                url=url,
+                params=params,
+                json=json_body,
+                headers=headers,
+            )
+        except httpx.ConnectError:
+            raise ToolError(
+                f"Cannot connect to backend service at {base_url}. "
+                "The service may be down or unreachable."
+            )
+        except httpx.TimeoutException:
+            raise ToolError(
+                f"Request to {base_url}{path} timed out. "
+                "The backend service may be overloaded."
+            )
+        except httpx.HTTPError as e:
+            raise ToolError(f"HTTP request failed: {e}")
 
         if response.status_code == 204:
             return {"success": True}
 
-        result: dict[str, Any] = response.json()
-        return result
+        # Try to parse response body for error messages
+        try:
+            body: dict[str, Any] = response.json()
+        except Exception:
+            body = {}
+
+        if response.status_code >= 400:
+            # Extract error message from backend response if available
+            error_msg = body.get("message") or body.get("error") or response.text
+            if response.status_code == 404:
+                raise ToolError(f"Resource not found: {error_msg}")
+            if response.status_code == 403:
+                raise ToolError(f"Access denied: {error_msg}")
+            if response.status_code == 409:
+                raise ToolError(f"Conflict: {error_msg}")
+            if response.status_code == 422:
+                raise ToolError(f"Validation error: {error_msg}")
+            raise ToolError(
+                f"Backend service error (HTTP {response.status_code}): {error_msg}"
+            )
+
+        return body
 
     async def close(self) -> None:
         """Close the underlying HTTP client."""
