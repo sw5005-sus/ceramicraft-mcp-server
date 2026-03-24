@@ -1,6 +1,7 @@
 """Authentication and authorization utilities.
 
 Verifies Zitadel-issued JWT tokens using JWKS public keys.
+Provides helpers for MCP tool auth enforcement.
 """
 
 import logging
@@ -10,10 +11,15 @@ from typing import Any
 import httpx
 import jwt
 import jwt.algorithms
+from mcp.server.fastmcp import Context
+from mcp.server.fastmcp.exceptions import ToolError
 
 from ceramicraft_mcp_server.config import get_settings
 
 logger = logging.getLogger(__name__)
+
+# Admin roles that grant elevated access
+ADMIN_ROLES = frozenset({"admin", "merchant"})
 
 
 @dataclass
@@ -24,6 +30,19 @@ class AuthenticatedUser:
     roles: list[str] = field(default_factory=list)
     email: str = ""
     name: str = ""
+
+    @property
+    def is_admin(self) -> bool:
+        """Check if user has any admin role."""
+        return bool(ADMIN_ROLES & set(self.roles))
+
+    @property
+    def user_id_int(self) -> int:
+        """Return user_id as integer for X-Original-User-ID header."""
+        try:
+            return int(self.user_id)
+        except (ValueError, TypeError):
+            return 0
 
 
 class AuthError(Exception):
@@ -66,6 +85,63 @@ def _get_jwks_client() -> JWKSClient:
         settings = get_settings()
         _jwks_client = JWKSClient(settings.MCP_ZITADEL_JWKS_URL)
     return _jwks_client
+
+
+def _extract_bearer_token(ctx: Context) -> str | None:
+    """Extract Bearer token from MCP request context.
+
+    MCP Streamable HTTP transport passes the Authorization header
+    through the request context.
+    """
+    # FastMCP stores request headers in the context session
+    # Try to get from transport headers
+    headers = getattr(ctx, "headers", None)
+    if headers:
+        auth_header = headers.get("authorization", "")
+        if auth_header.startswith("Bearer "):
+            return auth_header[7:]
+
+    # Fallback: check meta/extra from context
+    meta = getattr(ctx, "meta", None)
+    if meta:
+        extra = getattr(meta, "extra", None)
+        if isinstance(extra, dict):
+            token = extra.get("token") or extra.get("authorization", "")
+            if isinstance(token, str):
+                if token.startswith("Bearer "):
+                    return token[7:]
+                if token:
+                    return token
+
+    return None
+
+
+async def require_user(ctx: Context) -> AuthenticatedUser:
+    """Extract and verify user from MCP context. Raises ToolError on failure.
+
+    Use this in USER-level tools that need a valid authenticated user.
+    """
+    token = _extract_bearer_token(ctx)
+    if not token:
+        raise ToolError("Authentication required. Please provide a valid Bearer token.")
+
+    try:
+        return await verify_token(token)
+    except AuthError as e:
+        raise ToolError(f"Authentication failed: {e}")
+
+
+async def require_admin(ctx: Context) -> AuthenticatedUser:
+    """Extract and verify admin user from MCP context. Raises ToolError on failure.
+
+    Use this in ADMIN-level tools that require admin/merchant role.
+    """
+    user = await require_user(ctx)
+    if not user.is_admin:
+        raise ToolError(
+            "Admin access required. Your account does not have admin or merchant role."
+        )
+    return user
 
 
 async def verify_token(token: str) -> AuthenticatedUser:
