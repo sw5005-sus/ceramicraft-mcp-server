@@ -10,11 +10,13 @@ from ceramicraft_mcp_server.tools.product import register_product_tools
 from ceramicraft_mcp_server.tools.user import register_user_tools
 
 
-def create_mcp_server() -> FastMCP:
+def create_mcp_server(host: str = "0.0.0.0", port: int = 8080) -> FastMCP:
     """Create and configure the MCP server with all tools registered."""
     mcp = FastMCP(
         "CeramiCraft MCP Server",
         json_response=True,
+        host=host,
+        port=port,
     )
 
     # Register tool groups
