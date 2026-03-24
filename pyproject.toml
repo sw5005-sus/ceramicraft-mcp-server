@@ -3,7 +3,6 @@ name = "ceramicraft-mcp-server"
 version = "0.1.0"
 description = "MCP Server for CeramiCraft multi-agent system"
 readme = "README.md"
-license = { text = "MIT" }
 requires-python = ">=3.12"
 dependencies = [
     "mcp[cli]>=1.26.0",
