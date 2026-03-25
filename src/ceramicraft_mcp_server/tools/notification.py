@@ -21,18 +21,18 @@ def register_notification_tools(mcp: FastMCP) -> None:
     @mcp.tool()
     async def register_push_token(
         ctx: Context,
-        token: str,
-        device_type: str = "android",
+        device_id: str,
+        fcm_token: str,
     ) -> dict[str, Any]:
         """Register a device push notification token. Requires authentication.
 
         Args:
             ctx: MCP context (injected automatically).
-            token: FCM device token.
-            device_type: Device type (android/ios).
+            device_id: Unique device identifier.
+            fcm_token: Firebase Cloud Messaging token for the device.
 
         Returns:
-            Registration result.
+            Registration result including AES key.
         """
         user = await require_user(ctx)
         client = get_http_client()
@@ -40,8 +40,11 @@ def register_notification_tools(mcp: FastMCP) -> None:
             get_settings().NOTIFICATION_MS_HTTP,
             "POST",
             f"{PREFIX}/push-token",
-            user_id=user.user_id_int,
-            json_body={"token": token, "device_type": device_type},
+            json_body={
+                "user_id": user.user_id_int,
+                "device_id": device_id,
+                "fcm_token": fcm_token,
+            },
         )
 
     @mcp.tool()

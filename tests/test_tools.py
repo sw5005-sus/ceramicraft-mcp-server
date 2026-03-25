@@ -579,13 +579,16 @@ NOTIFICATION_TOOLS = _register(
 
 @pytest.mark.asyncio
 async def test_register_push_token():
-    http = _mock_http()
+    http = _mock_http({"aes_key": "abc123"})
     p1, p2 = _patch_user("notification", http)
     with p1, p2:
-        await NOTIFICATION_TOOLS["register_push_token"](_user_ctx(), "fcm-abc", "ios")
+        await NOTIFICATION_TOOLS["register_push_token"](
+            _user_ctx(), "device-1", "fcm-abc"
+        )
         body = http.call.call_args.kwargs["json_body"]
-        assert body["token"] == "fcm-abc"
-        assert body["device_type"] == "ios"
+        assert body["user_id"] == 42
+        assert body["device_id"] == "device-1"
+        assert body["fcm_token"] == "fcm-abc"
 
 
 @pytest.mark.asyncio

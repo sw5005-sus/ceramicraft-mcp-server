@@ -1,0 +1,1062 @@
+{
+  "schemes": [],
+  "swagger": "2.0",
+  "info": {
+    "description": "商品微服务相关接口",
+    "title": "商品服务 API",
+    "contact": {},
+    "version": "1.0"
+  },
+  "host": "",
+  "basePath": "/product-ms/v1",
+  "paths": {
+    "/customer/cart": {
+      "get": {
+        "description": "Get user's cart info",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Get user's cart info",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/data.BaseResponse"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/data.CartListVO"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customer/cart/items": {
+      "post": {
+        "description": "Create a cart item",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Create a cart item",
+        "parameters": [
+          {
+            "description": "cart item info",
+            "name": "cart_item",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/data.CartItemBasicVO"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/data.BaseResponse"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/data.CartItemBasicVO"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customer/cart/items/:item_id": {
+      "put": {
+        "description": "Update a cart item",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Update a cart item",
+        "parameters": [
+          {
+            "description": "cart item info",
+            "name": "cart_item",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/data.CartItemBasicVO"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/data.BaseResponse"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/data.CartItemBasicVO"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a cart item",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Delete a cart item",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "cart item ID",
+            "name": "item_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/data.BaseResponse"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customer/cart/price-estimate": {
+      "get": {
+        "description": "Calculate order price",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Calculate order price",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/data.BaseResponse"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/data.CartPriceEstimateResult"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customer/cart/selected-num": {
+      "get": {
+        "description": "Get number of selected items in cart",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Get number of selected items in cart",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/data.BaseResponse"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customer/product/{id}": {
+      "get": {
+        "description": "根据商品ID获取商品详细信息",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "商品"
+        ],
+        "summary": "获取商品详情(用户侧)",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "商品ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/data.BaseResponse"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/types.ProductInfo"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "请求参数错误",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          },
+          "404": {
+            "description": "商品不存在",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          },
+          "500": {
+            "description": "服务器内部错误",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customer/products": {
+      "get": {
+        "description": "支持按关键词搜索、分类筛选、分页，并按更新时间排序",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "商品"
+        ],
+        "summary": "用户端获取商品列表",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "搜索关键词",
+            "name": "keyword",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "商品分类",
+            "name": "category",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "偏移量，默认0",
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "排序方式：0-按更新时间降序，1-按更新时间升序，默认0",
+            "name": "order_by",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          }
+        }
+      }
+    },
+    "/merchant/images/upload-urls": {
+      "post": {
+        "description": "Get presigned URL for image upload",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Image"
+        ],
+        "summary": "Get presigned URL for image upload",
+        "parameters": [
+          {
+            "description": "image_type=(jpg|jpeg|png)",
+            "name": "product",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/data.ImgUploadRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/data.ImgUploadResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          }
+        }
+      }
+    },
+    "/merchant/product/{id}": {
+      "get": {
+        "description": "根据商品ID获取商品详细信息",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "商品"
+        ],
+        "summary": "获取商品详情",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "商品ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/data.BaseResponse"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/definitions/types.ProductInfo"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "400": {
+            "description": "请求参数错误",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          },
+          "404": {
+            "description": "商品不存在",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          },
+          "500": {
+            "description": "服务器内部错误",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          }
+        }
+      }
+    },
+    "/merchant/products": {
+      "get": {
+        "description": "支持按关键词搜索、分类筛选、分页，并按更新时间排序",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "商品"
+        ],
+        "summary": "商家端获取商品列表",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "搜索关键词",
+            "name": "keyword",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "商品分类",
+            "name": "category",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "偏移量，默认0",
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "排序方式：0-按更新时间降序，1-按更新时间升序，默认0",
+            "name": "order_by",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "新增一个商品",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "商品"
+        ],
+        "summary": "添加商品",
+        "parameters": [
+          {
+            "description": "商品信息",
+            "name": "product",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/types.ProductInfo"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          }
+        }
+      }
+    },
+    "/merchant/products/:id/status": {
+      "patch": {
+        "description": "将商品状态更改为上架状态",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "商品"
+        ],
+        "summary": "上架商品",
+        "parameters": [
+          {
+            "description": "商品上架请求",
+            "name": "request",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/types.UpdateProductStatusRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "上架成功",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          },
+          "400": {
+            "description": "请求参数错误",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          },
+          "404": {
+            "description": "商品不存在",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          },
+          "500": {
+            "description": "服务器内部错误",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          }
+        }
+      }
+    },
+    "/merchant/products/:id/stock": {
+      "patch": {
+        "description": "只有当商品处于下架状态时，才能更改商品库存",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "商品"
+        ],
+        "summary": "商家端更新商品库存",
+        "parameters": [
+          {
+            "description": "更新商品库存请求",
+            "name": "request",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/types.UpdateProductStockRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          },
+          "400": {
+            "description": "请求参数错误",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          }
+        }
+      }
+    },
+    "/merchant/products/{id}": {
+      "put": {
+        "description": "根据商品ID更新商品详细信息",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "商品"
+        ],
+        "summary": "编辑商品信息",
+        "parameters": [
+          {
+            "description": "编辑商品请求",
+            "name": "request",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/types.UpdateProductInfoRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "编辑成功",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          },
+          "400": {
+            "description": "请求参数错误",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          },
+          "404": {
+            "description": "商品不存在",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          },
+          "500": {
+            "description": "服务器内部错误",
+            "schema": {
+              "$ref": "#/definitions/data.BaseResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "data.BaseResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer"
+        },
+        "data": {},
+        "err_msg": {
+          "type": "string"
+        }
+      }
+    },
+    "data.CartItemBasicVO": {
+      "type": "object",
+      "required": [
+        "product_id",
+        "quantity"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "product_id": {
+          "type": "integer"
+        },
+        "quantity": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "selected": {
+          "type": "boolean"
+        },
+        "user_id": {
+          "type": "integer"
+        }
+      }
+    },
+    "data.CartItemDetailVO": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "product_info": {
+          "$ref": "#/definitions/types.ProductSimplifiedInfo"
+        },
+        "quantity": {
+          "type": "integer"
+        },
+        "selected": {
+          "type": "boolean"
+        },
+        "status": {
+          "description": "1: normal, 2: out of stock",
+          "type": "integer"
+        },
+        "total_price": {
+          "type": "integer"
+        }
+      }
+    },
+    "data.CartListVO": {
+      "type": "object",
+      "properties": {
+        "cart_items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/data.CartItemDetailVO"
+          }
+        },
+        "selected_item_count": {
+          "type": "integer"
+        },
+        "selected_price": {
+          "type": "integer"
+        }
+      }
+    },
+    "data.CartPriceEstimateResult": {
+      "type": "object",
+      "properties": {
+        "product_price": {
+          "type": "integer"
+        },
+        "shipping_price": {
+          "type": "integer"
+        },
+        "tax": {
+          "type": "integer"
+        },
+        "total": {
+          "type": "integer"
+        }
+      }
+    },
+    "data.ImgUploadRequest": {
+      "type": "object",
+      "required": [
+        "image_type"
+      ],
+      "properties": {
+        "image_type": {
+          "type": "string",
+          "enum": [
+            "jpg",
+            "png",
+            "jpeg"
+          ]
+        }
+      }
+    },
+    "data.ImgUploadResponse": {
+      "type": "object",
+      "properties": {
+        "image_id": {
+          "type": "string"
+        },
+        "upload_url": {
+          "type": "string"
+        }
+      }
+    },
+    "types.ProductInfo": {
+      "type": "object",
+      "properties": {
+        "capacity": {
+          "type": "string"
+        },
+        "care_instructions": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "desc": {
+          "type": "string"
+        },
+        "dimensions": {
+          "type": "string"
+        },
+        "material": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "pic_info": {
+          "type": "string"
+        },
+        "price": {
+          "type": "integer"
+        },
+        "status": {
+          "description": "0: 未上架, 1: 已上架",
+          "type": "integer"
+        },
+        "stock": {
+          "type": "integer"
+        },
+        "weight": {
+          "type": "string"
+        }
+      }
+    },
+    "types.ProductSimplifiedInfo": {
+      "type": "object",
+      "properties": {
+        "category": {
+          "type": "string"
+        },
+        "desc": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "pic_info": {
+          "type": "string"
+        },
+        "price": {
+          "type": "integer"
+        },
+        "status": {
+          "description": "0: 未上架, 1: 已上架",
+          "type": "integer"
+        },
+        "stock": {
+          "type": "integer"
+        }
+      }
+    },
+    "types.UpdateProductInfoRequest": {
+      "type": "object",
+      "properties": {
+        "capacity": {
+          "type": "string"
+        },
+        "care_instructions": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "desc": {
+          "type": "string"
+        },
+        "dimensions": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "material": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "pic_info": {
+          "type": "string"
+        },
+        "price": {
+          "type": "integer"
+        },
+        "weight": {
+          "type": "string"
+        }
+      }
+    },
+    "types.UpdateProductStatusRequest": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "description": "0-新的状态是下架，1-新的状态是上架",
+          "type": "integer"
+        }
+      }
+    },
+    "types.UpdateProductStockRequest": {
+      "type": "object",
+      "properties": {
+        "stock": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}
