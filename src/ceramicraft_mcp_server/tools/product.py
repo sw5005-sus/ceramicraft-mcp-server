@@ -10,7 +10,12 @@ from typing import Any
 
 from mcp.server.fastmcp import Context, FastMCP
 
-from ceramicraft_mcp_server.auth import require_admin
+from ceramicraft_mcp_server.auth import (
+    ROLE_PRODUCT_AUDIT,
+    ROLE_PRODUCT_READ,
+    ROLE_PRODUCT_WRITE,
+    require_role,
+)
 from ceramicraft_mcp_server.config import get_settings
 from ceramicraft_mcp_server.http_client import get_http_client
 
@@ -89,7 +94,7 @@ def register_product_tools(mcp: FastMCP) -> None:
         care_instructions: str = "",
         status: int = 0,
     ) -> dict[str, Any]:
-        """Create a new product listing. Requires ADMIN role.
+        """Create a new product listing. Requires merchant_admin or product_editor role.
 
         Args:
             ctx: MCP context (injected automatically).
@@ -109,7 +114,7 @@ def register_product_tools(mcp: FastMCP) -> None:
         Returns:
             The created product details.
         """
-        user = await require_admin(ctx)
+        user = await require_role(ctx, ROLE_PRODUCT_WRITE)
         client = get_http_client()
         body: dict[str, Any] = {
             "name": name,
@@ -155,7 +160,7 @@ def register_product_tools(mcp: FastMCP) -> None:
         capacity: str | None = None,
         care_instructions: str | None = None,
     ) -> dict[str, Any]:
-        """Update an existing product. Requires ADMIN role.
+        """Update an existing product. Requires merchant_admin or product_editor role.
 
         Args:
             ctx: MCP context (injected automatically).
@@ -174,7 +179,7 @@ def register_product_tools(mcp: FastMCP) -> None:
         Returns:
             Updated product details.
         """
-        user = await require_admin(ctx)
+        user = await require_role(ctx, ROLE_PRODUCT_WRITE)
         client = get_http_client()
         body: dict[str, Any] = {"id": product_id}
         if name is not None:
@@ -212,7 +217,7 @@ def register_product_tools(mcp: FastMCP) -> None:
         product_id: int,
         status: int,
     ) -> dict[str, Any]:
-        """Update product publish status. Requires ADMIN role.
+        """Update product publish status. Requires merchant_admin or product_auditor role.
 
         Args:
             ctx: MCP context (injected automatically).
@@ -222,7 +227,7 @@ def register_product_tools(mcp: FastMCP) -> None:
         Returns:
             Update result.
         """
-        user = await require_admin(ctx)
+        user = await require_role(ctx, ROLE_PRODUCT_AUDIT)
         client = get_http_client()
         return await client.call(
             get_settings().PRODUCT_MS_HTTP,
@@ -238,7 +243,7 @@ def register_product_tools(mcp: FastMCP) -> None:
         product_id: int,
         stock: int,
     ) -> dict[str, Any]:
-        """Update product stock quantity. Requires ADMIN role.
+        """Update product stock quantity. Requires merchant_admin or product_editor role.
 
         Args:
             ctx: MCP context (injected automatically).
@@ -248,7 +253,7 @@ def register_product_tools(mcp: FastMCP) -> None:
         Returns:
             Update result.
         """
-        user = await require_admin(ctx)
+        user = await require_role(ctx, ROLE_PRODUCT_WRITE)
         client = get_http_client()
         return await client.call(
             get_settings().PRODUCT_MS_HTTP,
@@ -263,7 +268,7 @@ def register_product_tools(mcp: FastMCP) -> None:
         ctx: Context,
         product_id: int,
     ) -> dict[str, Any]:
-        """Get product detail from merchant view. Requires ADMIN role.
+        """Get product detail from merchant view. Requires merchant_admin, product_editor, or product_auditor role.
 
         Args:
             ctx: MCP context (injected automatically).
@@ -272,7 +277,7 @@ def register_product_tools(mcp: FastMCP) -> None:
         Returns:
             Full product details including internal merchant fields.
         """
-        user = await require_admin(ctx)
+        user = await require_role(ctx, ROLE_PRODUCT_READ)
         client = get_http_client()
         return await client.call(
             get_settings().PRODUCT_MS_HTTP,
@@ -289,7 +294,7 @@ def register_product_tools(mcp: FastMCP) -> None:
         offset: int = 0,
         order_by: int = 0,
     ) -> dict[str, Any]:
-        """List products from merchant view. Requires ADMIN role.
+        """List products from merchant view. Requires merchant_admin, product_editor, or product_auditor role.
 
         Args:
             ctx: MCP context (injected automatically).
@@ -301,7 +306,7 @@ def register_product_tools(mcp: FastMCP) -> None:
         Returns:
             Product list with merchant-specific fields.
         """
-        user = await require_admin(ctx)
+        user = await require_role(ctx, ROLE_PRODUCT_READ)
         client = get_http_client()
         params: dict[str, Any] = {"offset": offset, "order_by": order_by}
         if keyword:
@@ -322,7 +327,7 @@ def register_product_tools(mcp: FastMCP) -> None:
         ctx: Context,
         image_type: str = "jpg",
     ) -> dict[str, Any]:
-        """Get a presigned URL for product image upload. Requires ADMIN role.
+        """Get a presigned URL for product image upload. Requires merchant_admin or product_editor role.
 
         Args:
             ctx: MCP context (injected automatically).
@@ -331,7 +336,7 @@ def register_product_tools(mcp: FastMCP) -> None:
         Returns:
             Presigned upload URL.
         """
-        user = await require_admin(ctx)
+        user = await require_role(ctx, ROLE_PRODUCT_WRITE)
         client = get_http_client()
         return await client.call(
             get_settings().PRODUCT_MS_HTTP,

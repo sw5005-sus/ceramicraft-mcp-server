@@ -21,6 +21,12 @@ logger = logging.getLogger(__name__)
 # Admin roles that grant elevated access
 ADMIN_ROLES = frozenset({"merchant_admin", "product_auditor", "product_editor"})
 
+# Per-tool role sets
+ROLE_MERCHANT_ADMIN = frozenset({"merchant_admin"})
+ROLE_PRODUCT_WRITE = frozenset({"merchant_admin", "product_editor"})
+ROLE_PRODUCT_READ = frozenset({"merchant_admin", "product_editor", "product_auditor"})
+ROLE_PRODUCT_AUDIT = frozenset({"merchant_admin", "product_auditor"})
+
 
 @dataclass
 class AuthenticatedUser:
@@ -134,13 +140,27 @@ async def require_user(ctx: Context) -> AuthenticatedUser:
 async def require_admin(ctx: Context) -> AuthenticatedUser:
     """Extract and verify admin user from MCP context. Raises ToolError on failure.
 
-    Use this in ADMIN-level tools that require merchant_admin/product_auditor/product_editor role.
+    Accepts any ADMIN_ROLES role. For fine-grained control, use require_role().
+    """
+    return await require_role(ctx, ADMIN_ROLES)
+
+
+async def require_role(
+    ctx: Context, allowed_roles: frozenset[str]
+) -> AuthenticatedUser:
+    """Extract and verify user has one of the allowed roles.
+
+    Args:
+        ctx: MCP request context.
+        allowed_roles: Set of role names that grant access.
+
+    Raises:
+        ToolError: If user is not authenticated or lacks required role.
     """
     user = await require_user(ctx)
-    if not user.is_admin:
-        raise ToolError(
-            "Admin access required. Your account does not have the required role (merchant_admin, product_auditor, or product_editor)."
-        )
+    if not (set(user.roles) & allowed_roles):
+        roles_str = ", ".join(sorted(allowed_roles))
+        raise ToolError(f"Access denied. Required role: {roles_str}.")
     return user
 
 

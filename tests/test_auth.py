@@ -8,6 +8,10 @@ import pytest
 from mcp.server.fastmcp.exceptions import ToolError
 
 from ceramicraft_mcp_server.auth import (
+    ROLE_MERCHANT_ADMIN,
+    ROLE_PRODUCT_AUDIT,
+    ROLE_PRODUCT_READ,
+    ROLE_PRODUCT_WRITE,
     AuthError,
     AuthenticatedUser,
     JWKSClient,
@@ -15,6 +19,7 @@ from ceramicraft_mcp_server.auth import (
     _extract_roles,
     _find_key,
     require_admin,
+    require_role,
     require_user,
     verify_token,
 )
@@ -271,7 +276,7 @@ async def test_require_admin_non_admin():
         "ceramicraft_mcp_server.auth.verify_token",
         AsyncMock(return_value=non_admin),
     ):
-        with pytest.raises(ToolError, match="Admin access required"):
+        with pytest.raises(ToolError, match="Access denied"):
             await require_admin(ctx)
 
 
@@ -289,6 +294,109 @@ async def test_require_admin_success():
     ):
         user = await require_admin(ctx)
         assert user.is_admin
+
+
+@pytest.mark.asyncio
+async def test_require_role_product_write_with_editor():
+    """product_editor can access ROLE_PRODUCT_WRITE tools."""
+    ctx = MagicMock()
+    ctx.headers = {"authorization": "Bearer valid.token"}
+    ctx.meta = None
+    editor = AuthenticatedUser(user_id="1", roles=["product_editor"])
+
+    with patch(
+        "ceramicraft_mcp_server.auth.verify_token",
+        AsyncMock(return_value=editor),
+    ):
+        user = await require_role(ctx, ROLE_PRODUCT_WRITE)
+        assert user.user_id == "1"
+
+
+@pytest.mark.asyncio
+async def test_require_role_product_write_denied_for_auditor():
+    """product_auditor cannot access ROLE_PRODUCT_WRITE tools."""
+    ctx = MagicMock()
+    ctx.headers = {"authorization": "Bearer valid.token"}
+    ctx.meta = None
+    auditor = AuthenticatedUser(user_id="1", roles=["product_auditor"])
+
+    with patch(
+        "ceramicraft_mcp_server.auth.verify_token",
+        AsyncMock(return_value=auditor),
+    ):
+        with pytest.raises(ToolError, match="Access denied"):
+            await require_role(ctx, ROLE_PRODUCT_WRITE)
+
+
+@pytest.mark.asyncio
+async def test_require_role_product_audit_with_auditor():
+    """product_auditor can access ROLE_PRODUCT_AUDIT tools."""
+    ctx = MagicMock()
+    ctx.headers = {"authorization": "Bearer valid.token"}
+    ctx.meta = None
+    auditor = AuthenticatedUser(user_id="1", roles=["product_auditor"])
+
+    with patch(
+        "ceramicraft_mcp_server.auth.verify_token",
+        AsyncMock(return_value=auditor),
+    ):
+        user = await require_role(ctx, ROLE_PRODUCT_AUDIT)
+        assert user.user_id == "1"
+
+
+@pytest.mark.asyncio
+async def test_require_role_product_read_all_roles():
+    """All three admin roles can access ROLE_PRODUCT_READ tools."""
+    for role in ["merchant_admin", "product_editor", "product_auditor"]:
+        ctx = MagicMock()
+        ctx.headers = {"authorization": "Bearer valid.token"}
+        ctx.meta = None
+        user_obj = AuthenticatedUser(user_id="1", roles=[role])
+
+        with patch(
+            "ceramicraft_mcp_server.auth.verify_token",
+            AsyncMock(return_value=user_obj),
+        ):
+            user = await require_role(ctx, ROLE_PRODUCT_READ)
+            assert user.user_id == "1"
+
+
+@pytest.mark.asyncio
+async def test_require_role_merchant_admin_denied_for_editor():
+    """product_editor cannot access ROLE_MERCHANT_ADMIN tools."""
+    ctx = MagicMock()
+    ctx.headers = {"authorization": "Bearer valid.token"}
+    ctx.meta = None
+    editor = AuthenticatedUser(user_id="1", roles=["product_editor"])
+
+    with patch(
+        "ceramicraft_mcp_server.auth.verify_token",
+        AsyncMock(return_value=editor),
+    ):
+        with pytest.raises(ToolError, match="Access denied"):
+            await require_role(ctx, ROLE_MERCHANT_ADMIN)
+
+
+@pytest.mark.asyncio
+async def test_require_role_customer_denied():
+    """Customer role has no access to any admin tools."""
+    ctx = MagicMock()
+    ctx.headers = {"authorization": "Bearer valid.token"}
+    ctx.meta = None
+    customer = AuthenticatedUser(user_id="1", roles=["customer"])
+
+    with patch(
+        "ceramicraft_mcp_server.auth.verify_token",
+        AsyncMock(return_value=customer),
+    ):
+        with pytest.raises(ToolError, match="Access denied"):
+            await require_role(ctx, ROLE_MERCHANT_ADMIN)
+        with pytest.raises(ToolError, match="Access denied"):
+            await require_role(ctx, ROLE_PRODUCT_WRITE)
+        with pytest.raises(ToolError, match="Access denied"):
+            await require_role(ctx, ROLE_PRODUCT_READ)
+        with pytest.raises(ToolError, match="Access denied"):
+            await require_role(ctx, ROLE_PRODUCT_AUDIT)
 
 
 # ─── verify_token ──────────────────────────────────────────

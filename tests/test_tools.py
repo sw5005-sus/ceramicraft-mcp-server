@@ -140,7 +140,7 @@ async def test_create_product_requires_admin():
             "ceramicraft_mcp_server.tools.product.get_http_client", return_value=http
         ),
     ):
-        with pytest.raises(ToolError, match="Admin access required"):
+        with pytest.raises(ToolError, match="Access denied"):
             await PRODUCT_TOOLS["create_product"](
                 _user_ctx(), "Vase", "A vase", 1000, "vase", 10
             )

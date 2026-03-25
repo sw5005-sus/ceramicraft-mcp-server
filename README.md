@@ -14,13 +14,13 @@ AI Agents ──MCP (Streamable HTTP)──▶ MCP Server ──HTTP──▶ Ba
 |------|------|---------|-------------|
 | `search_products` | PUBLIC | product-ms | Search products by keyword, category, price range |
 | `get_product` | PUBLIC | product-ms | Get product detail by ID |
-| `create_product` | ADMIN | product-ms | Create a new product listing |
-| `update_product` | ADMIN | product-ms | Edit product info (name, desc, price, ceramic attributes) |
-| `update_product_status` | ADMIN | product-ms | Publish / unpublish a product |
-| `update_product_stock` | ADMIN | product-ms | Update inventory stock |
-| `get_merchant_product` | ADMIN | product-ms | Get full merchant-view product detail |
-| `list_merchant_products` | ADMIN | product-ms | List products (merchant dashboard) |
-| `get_image_upload_url` | ADMIN | product-ms | Get presigned URL for image upload |
+| `create_product` | ADMIN (`merchant_admin`, `product_editor`) | product-ms | Create a new product listing |
+| `update_product` | ADMIN (`merchant_admin`, `product_editor`) | product-ms | Edit product info (name, desc, price, ceramic attributes) |
+| `update_product_status` | ADMIN (`merchant_admin`, `product_auditor`) | product-ms | Publish / unpublish a product |
+| `update_product_stock` | ADMIN (`merchant_admin`, `product_editor`) | product-ms | Update inventory stock |
+| `get_merchant_product` | ADMIN (all) | product-ms | Get full merchant-view product detail |
+| `list_merchant_products` | ADMIN (all) | product-ms | List products (merchant dashboard) |
+| `get_image_upload_url` | ADMIN (`merchant_admin`, `product_editor`) | product-ms | Get presigned URL for image upload |
 
 ### Cart (5 tools)
 
@@ -40,10 +40,10 @@ AI Agents ──MCP (Streamable HTTP)──▶ MCP Server ──HTTP──▶ Ba
 | `list_my_orders` | USER | order-ms | List user's order history |
 | `get_order_detail` | USER | order-ms | Get order detail by order number |
 | `confirm_receipt` | USER | order-ms | Confirm delivery received |
-| `get_order_stats` | ADMIN | order-ms | Get order statistics dashboard |
-| `list_merchant_orders` | ADMIN | order-ms | List orders (merchant view, filterable) |
-| `get_merchant_order_detail` | ADMIN | order-ms | Get order detail (merchant view) |
-| `ship_order` | ADMIN | order-ms | Ship an order with tracking number |
+| `get_order_stats` | ADMIN (`merchant_admin`) | order-ms | Get order statistics dashboard |
+| `list_merchant_orders` | ADMIN (`merchant_admin`) | order-ms | List orders (merchant view, filterable) |
+| `get_merchant_order_detail` | ADMIN (`merchant_admin`) | order-ms | Get order detail (merchant view) |
+| `ship_order` | ADMIN (`merchant_admin`) | order-ms | Ship an order with tracking number |
 
 ### Review (8 tools)
 
@@ -53,10 +53,10 @@ AI Agents ──MCP (Streamable HTTP)──▶ MCP Server ──HTTP──▶ Ba
 | `get_user_reviews` | USER | comment-ms | Get current user's reviews |
 | `create_review` | USER | comment-ms | Post a product review |
 | `like_review` | USER | comment-ms | Like a review |
-| `list_reviews_admin` | ADMIN | comment-ms | List reviews with filters (moderation) |
-| `delete_review` | ADMIN | comment-ms | Delete a review |
-| `pin_review` | ADMIN | comment-ms | Pin / unpin a review |
-| `reply_to_review` | ADMIN | comment-ms | Reply to a review as merchant |
+| `list_reviews_admin` | ADMIN (`merchant_admin`) | comment-ms | List reviews with filters (moderation) |
+| `delete_review` | ADMIN (`merchant_admin`) | comment-ms | Delete a review |
+| `pin_review` | ADMIN (`merchant_admin`) | comment-ms | Pin / unpin a review |
+| `reply_to_review` | ADMIN (`merchant_admin`) | comment-ms | Reply to a review as merchant |
 
 ### User (6 tools)
 
@@ -75,8 +75,8 @@ AI Agents ──MCP (Streamable HTTP)──▶ MCP Server ──HTTP──▶ Ba
 |------|------|---------|-------------|
 | `get_pay_account` | USER | payment-ms | Get wallet balance |
 | `top_up_account` | USER | payment-ms | Top up with redeem code |
-| `list_redeem_codes` | ADMIN | payment-ms | Query redeem codes |
-| `generate_redeem_codes` | ADMIN | payment-ms | Generate new redeem codes |
+| `list_redeem_codes` | ADMIN (`merchant_admin`) | payment-ms | Query redeem codes |
+| `generate_redeem_codes` | ADMIN (`merchant_admin`) | payment-ms | Generate new redeem codes |
 
 ### Notification (1 tool)
 
@@ -90,7 +90,7 @@ AI Agents ──MCP (Streamable HTTP)──▶ MCP Server ──HTTP──▶ Ba
 |------------|-------|-------------|
 | PUBLIC | 3 | No authentication needed |
 | USER | 21 | Requires valid Zitadel JWT |
-| ADMIN | 17 | Requires JWT with `merchant_admin`, `product_auditor`, or `product_editor` role |
+| ADMIN | 17 | Per-tool role check (see table above for specific roles) |
 
 ## Auth
 

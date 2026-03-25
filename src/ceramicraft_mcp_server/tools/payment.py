@@ -8,7 +8,7 @@ from typing import Any
 
 from mcp.server.fastmcp import Context, FastMCP
 
-from ceramicraft_mcp_server.auth import require_admin, require_user
+from ceramicraft_mcp_server.auth import ROLE_MERCHANT_ADMIN, require_role, require_user
 from ceramicraft_mcp_server.config import get_settings
 from ceramicraft_mcp_server.http_client import get_http_client
 
@@ -72,7 +72,7 @@ def register_payment_tools(mcp: FastMCP) -> None:
         limit: int = 20,
         used: bool | None = None,
     ) -> dict[str, Any]:
-        """List redeem codes. Requires ADMIN role.
+        """List redeem codes. Requires merchant_admin role.
 
         Args:
             ctx: MCP context (injected automatically).
@@ -83,7 +83,7 @@ def register_payment_tools(mcp: FastMCP) -> None:
         Returns:
             List of redeem codes with details.
         """
-        user = await require_admin(ctx)
+        user = await require_role(ctx, ROLE_MERCHANT_ADMIN)
         client = get_http_client()
         params: dict[str, Any] = {"limit": limit}
         if code:
@@ -105,7 +105,7 @@ def register_payment_tools(mcp: FastMCP) -> None:
         amount: int,
         count: int = 1,
     ) -> dict[str, Any]:
-        """Generate new redeem codes. Requires ADMIN role.
+        """Generate new redeem codes. Requires merchant_admin role.
 
         Args:
             ctx: MCP context (injected automatically).
@@ -115,7 +115,7 @@ def register_payment_tools(mcp: FastMCP) -> None:
         Returns:
             Generated redeem codes.
         """
-        user = await require_admin(ctx)
+        user = await require_role(ctx, ROLE_MERCHANT_ADMIN)
         client = get_http_client()
         return await client.call(
             get_settings().PAYMENT_MS_HTTP,

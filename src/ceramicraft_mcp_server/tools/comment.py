@@ -10,7 +10,7 @@ from typing import Any
 from mcp.server.fastmcp import Context, FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
 
-from ceramicraft_mcp_server.auth import require_admin, require_user
+from ceramicraft_mcp_server.auth import ROLE_MERCHANT_ADMIN, require_role, require_user
 from ceramicraft_mcp_server.config import get_settings
 from ceramicraft_mcp_server.http_client import get_http_client
 
@@ -133,7 +133,7 @@ def register_comment_tools(mcp: FastMCP) -> None:
         product_id: int,
         stars: int = 0,
     ) -> dict[str, Any]:
-        """List reviews for moderation. Requires ADMIN role.
+        """List reviews for moderation. Requires merchant_admin role.
 
         Args:
             ctx: MCP context (injected automatically).
@@ -143,7 +143,7 @@ def register_comment_tools(mcp: FastMCP) -> None:
         Returns:
             Reviews list for moderation.
         """
-        user = await require_admin(ctx)
+        user = await require_role(ctx, ROLE_MERCHANT_ADMIN)
         client = get_http_client()
         return await client.call(
             get_settings().COMMENT_MS_HTTP,
@@ -155,7 +155,7 @@ def register_comment_tools(mcp: FastMCP) -> None:
 
     @mcp.tool()
     async def delete_review(ctx: Context, review_id: str) -> dict[str, Any]:
-        """Delete a review (moderation). Requires ADMIN role.
+        """Delete a review (moderation). Requires merchant_admin role.
 
         Args:
             ctx: MCP context (injected automatically).
@@ -164,7 +164,7 @@ def register_comment_tools(mcp: FastMCP) -> None:
         Returns:
             Deletion result.
         """
-        user = await require_admin(ctx)
+        user = await require_role(ctx, ROLE_MERCHANT_ADMIN)
         client = get_http_client()
         return await client.call(
             get_settings().COMMENT_MS_HTTP,
@@ -179,7 +179,7 @@ def register_comment_tools(mcp: FastMCP) -> None:
         review_id: str,
         is_pinned: bool = True,
     ) -> dict[str, Any]:
-        """Pin or unpin a review. Requires ADMIN role.
+        """Pin or unpin a review. Requires merchant_admin role.
 
         Args:
             ctx: MCP context (injected automatically).
@@ -189,7 +189,7 @@ def register_comment_tools(mcp: FastMCP) -> None:
         Returns:
             Pin result.
         """
-        user = await require_admin(ctx)
+        user = await require_role(ctx, ROLE_MERCHANT_ADMIN)
         client = get_http_client()
         return await client.call(
             get_settings().COMMENT_MS_HTTP,
@@ -205,7 +205,7 @@ def register_comment_tools(mcp: FastMCP) -> None:
         review_id: str,
         content: str,
     ) -> dict[str, Any]:
-        """Reply to a review as merchant. Requires ADMIN role.
+        """Reply to a review as merchant. Requires merchant_admin role.
 
         Args:
             ctx: MCP context (injected automatically).
@@ -215,7 +215,7 @@ def register_comment_tools(mcp: FastMCP) -> None:
         Returns:
             The created reply.
         """
-        user = await require_admin(ctx)
+        user = await require_role(ctx, ROLE_MERCHANT_ADMIN)
         client = get_http_client()
         return await client.call(
             get_settings().COMMENT_MS_HTTP,

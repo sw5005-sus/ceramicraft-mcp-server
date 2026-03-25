@@ -8,7 +8,7 @@ from typing import Any
 
 from mcp.server.fastmcp import Context, FastMCP
 
-from ceramicraft_mcp_server.auth import require_admin, require_user
+from ceramicraft_mcp_server.auth import ROLE_MERCHANT_ADMIN, require_role, require_user
 from ceramicraft_mcp_server.config import get_settings
 from ceramicraft_mcp_server.http_client import get_http_client
 
@@ -152,7 +152,7 @@ def register_order_tools(mcp: FastMCP) -> None:
 
     @mcp.tool()
     async def get_order_stats(ctx: Context) -> dict[str, Any]:
-        """Get order statistics. Requires ADMIN role.
+        """Get order statistics. Requires merchant_admin role.
 
         Args:
             ctx: MCP context (injected automatically).
@@ -160,7 +160,7 @@ def register_order_tools(mcp: FastMCP) -> None:
         Returns:
             Order statistics (total orders, revenue, etc.).
         """
-        user = await require_admin(ctx)
+        user = await require_role(ctx, ROLE_MERCHANT_ADMIN)
         client = get_http_client()
         return await client.call(
             get_settings().ORDER_MS_HTTP,
@@ -180,7 +180,7 @@ def register_order_tools(mcp: FastMCP) -> None:
         start_time: str = "",
         end_time: str = "",
     ) -> dict[str, Any]:
-        """List all orders from merchant view. Requires ADMIN role.
+        """List all orders from merchant view. Requires merchant_admin role.
 
         Args:
             ctx: MCP context (injected automatically).
@@ -195,7 +195,7 @@ def register_order_tools(mcp: FastMCP) -> None:
         Returns:
             Orders list with merchant-specific info.
         """
-        admin = await require_admin(ctx)
+        admin = await require_role(ctx, ROLE_MERCHANT_ADMIN)
         client = get_http_client()
         body: dict[str, Any] = {"limit": limit, "offset": offset}
         if order_no:
@@ -222,7 +222,7 @@ def register_order_tools(mcp: FastMCP) -> None:
         ctx: Context,
         order_no: str,
     ) -> dict[str, Any]:
-        """Get order detail from merchant view. Requires ADMIN role.
+        """Get order detail from merchant view. Requires merchant_admin role.
 
         Args:
             ctx: MCP context (injected automatically).
@@ -231,7 +231,7 @@ def register_order_tools(mcp: FastMCP) -> None:
         Returns:
             Full order details including receiver info.
         """
-        user = await require_admin(ctx)
+        user = await require_role(ctx, ROLE_MERCHANT_ADMIN)
         client = get_http_client()
         return await client.call(
             get_settings().ORDER_MS_HTTP,
@@ -246,7 +246,7 @@ def register_order_tools(mcp: FastMCP) -> None:
         order_no: str,
         tracking_no: str,
     ) -> dict[str, Any]:
-        """Mark an order as shipped. Requires ADMIN role.
+        """Mark an order as shipped. Requires merchant_admin role.
 
         Args:
             ctx: MCP context (injected automatically).
@@ -256,7 +256,7 @@ def register_order_tools(mcp: FastMCP) -> None:
         Returns:
             Shipping result.
         """
-        user = await require_admin(ctx)
+        user = await require_role(ctx, ROLE_MERCHANT_ADMIN)
         client = get_http_client()
         return await client.call(
             get_settings().ORDER_MS_HTTP,

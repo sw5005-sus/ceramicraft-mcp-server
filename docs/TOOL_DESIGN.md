@@ -63,7 +63,9 @@ JWT, extracts `sub` (user ID), and injects this header into internal HTTP calls.
 │  user_id and passes it to backend via                    │
 │  X-Original-User-ID header.                              │
 ├─────────────────────────────────────────────────────────┤
-│  Level 2: ADMIN — Valid JWT + merchant_admin/product_auditor/product_editor role │
+│  Level 2: ADMIN — Valid JWT + per-tool role check         │
+│  Roles: merchant_admin, product_auditor, product_editor  │
+│  Each tool specifies which roles are allowed.            │
 │  Token must contain role in                              │
 │  `urn:zitadel:iam:org:project:roles` claim.              │
 │  Used by Product Agent, Comment Review Agent, etc.       │
@@ -101,10 +103,15 @@ async def list_my_orders(ctx: Context) -> dict:
     )
     ...
 
-# ADMIN — verify token + check role
+# ADMIN — verify token + check specific role
 @mcp.tool()
 async def delete_review(ctx: Context, review_id: str) -> dict:
-    user = await require_admin(ctx)  # raises ToolError if not admin
+    user = await require_role(ctx, ROLE_MERCHANT_ADMIN)  # only merchant_admin
+    ...
+
+@mcp.tool()
+async def create_product(ctx: Context, ...) -> dict:
+    user = await require_role(ctx, ROLE_PRODUCT_WRITE)  # merchant_admin or product_editor
     ...
 ```
 
@@ -130,13 +137,13 @@ Used by: **Search Intention Agent**, **Customer Support Agent**, **Product Agent
 |------|------|-------------|----------------|
 | `search_products` | PUBLIC | `GET /product-ms/v1/customer/products?keyword=...` | Search Agent: semantic search → keyword extraction → call this |
 | `get_product` | PUBLIC | `GET /product-ms/v1/customer/product/{id}` | Support Agent: show product details to user |
-| `create_product` | ADMIN | `POST /product-ms/v1/merchant/products` | Product Agent: auto-generate listing |
-| `update_product` | ADMIN | `PUT /product-ms/v1/merchant/products/{id}` | Product Agent: edit descriptions |
-| `update_product_status` | ADMIN | `PATCH /product-ms/v1/merchant/products/{id}/status` | Product Review Agent: publish/unpublish after review |
-| `update_product_stock` | ADMIN | `PATCH /product-ms/v1/merchant/products/{id}/stock` | Product Agent: inventory management |
-| `get_merchant_product` | ADMIN | `GET /product-ms/v1/merchant/product/{id}` | Product Review Agent: get full merchant-view details |
-| `list_merchant_products` | ADMIN | `GET /product-ms/v1/merchant/products` | Product Review Agent: list products pending review |
-| `get_image_upload_url` | ADMIN | `POST /product-ms/v1/merchant/images/upload-urls` | Product Agent: upload generated images |
+| `create_product` | ADMIN (`merchant_admin`, `product_editor`) | `POST /product-ms/v1/merchant/products` | Product Agent: auto-generate listing |
+| `update_product` | ADMIN (`merchant_admin`, `product_editor`) | `PUT /product-ms/v1/merchant/products/{id}` | Product Agent: edit descriptions |
+| `update_product_status` | ADMIN (`merchant_admin`, `product_auditor`) | `PATCH /product-ms/v1/merchant/products/{id}/status` | Product Review Agent: publish/unpublish after review |
+| `update_product_stock` | ADMIN (`merchant_admin`, `product_editor`) | `PATCH /product-ms/v1/merchant/products/{id}/stock` | Product Agent: inventory management |
+| `get_merchant_product` | ADMIN (all) | `GET /product-ms/v1/merchant/product/{id}` | Product Review Agent: get full merchant-view details |
+| `list_merchant_products` | ADMIN (all) | `GET /product-ms/v1/merchant/products` | Product Review Agent: list products pending review |
+| `get_image_upload_url` | ADMIN (`merchant_admin`, `product_editor`) | `POST /product-ms/v1/merchant/images/upload-urls` | Product Agent: upload generated images |
 
 ### 4.2 Cart Tools
 
@@ -160,10 +167,10 @@ Used by: **Customer Support Agent**
 | `list_my_orders` | USER | `POST /order-ms/v1/customer/orders/list` | Support Agent: show order history |
 | `get_order_detail` | USER | `GET /order-ms/v1/customer/orders/{order_no}` | Support Agent: order status inquiry |
 | `confirm_receipt` | USER | `PATCH /order-ms/v1/customer/orders/{order_no}/confirm` | Support Agent: confirm delivery |
-| `get_order_stats` | ADMIN | `GET /order-ms/v1/merchant/order-stats` | AIOps Agent: dashboard metrics |
-| `list_merchant_orders` | ADMIN | `POST /order-ms/v1/merchant/orders/list` | AIOps Agent: order monitoring |
-| `get_merchant_order_detail` | ADMIN | `GET /order-ms/v1/merchant/orders/{order_no}` | AIOps Agent: detailed investigation |
-| `ship_order` | ADMIN | `PATCH /order-ms/v1/merchant/orders/{order_no}/ship` | (future) auto-fulfillment |
+| `get_order_stats` | ADMIN (`merchant_admin`) | `GET /order-ms/v1/merchant/order-stats` | AIOps Agent: dashboard metrics |
+| `list_merchant_orders` | ADMIN (`merchant_admin`) | `POST /order-ms/v1/merchant/orders/list` | AIOps Agent: order monitoring |
+| `get_merchant_order_detail` | ADMIN (`merchant_admin`) | `GET /order-ms/v1/merchant/orders/{order_no}` | AIOps Agent: detailed investigation |
+| `ship_order` | ADMIN (`merchant_admin`) | `PATCH /order-ms/v1/merchant/orders/{order_no}/ship` | (future) auto-fulfillment |
 
 ### 4.4 Comment/Review Tools
 
@@ -175,10 +182,10 @@ Used by: **Comment Review Agent**, **Customer Support Agent**
 | `get_user_reviews` | USER | `GET /comment-ms/v1/customer/reviews/user` | Support Agent: show user's own reviews |
 | `create_review` | USER | `POST /comment-ms/v1/customer/reviews` | Support Agent: help user post review |
 | `like_review` | USER | `POST /comment-ms/v1/customer/reviews/{id}/like` | Support Agent: like on behalf of user |
-| `list_reviews_admin` | ADMIN | `POST /comment-ms/v1/merchant/reviews/list` | Comment Review Agent: list reviews for moderation |
-| `delete_review` | ADMIN | `DELETE /comment-ms/v1/merchant/reviews/{id}` | Comment Review Agent: remove violating content |
-| `pin_review` | ADMIN | `PATCH /comment-ms/v1/merchant/reviews/{id}` | Comment Review Agent: pin high-quality reviews |
-| `reply_to_review` | ADMIN | `POST /comment-ms/v1/merchant/reviews/{id}/replies` | Comment Review Agent: auto-draft merchant reply |
+| `list_reviews_admin` | ADMIN (`merchant_admin`) | `POST /comment-ms/v1/merchant/reviews/list` | Comment Review Agent: list reviews for moderation |
+| `delete_review` | ADMIN (`merchant_admin`) | `DELETE /comment-ms/v1/merchant/reviews/{id}` | Comment Review Agent: remove violating content |
+| `pin_review` | ADMIN (`merchant_admin`) | `PATCH /comment-ms/v1/merchant/reviews/{id}` | Comment Review Agent: pin high-quality reviews |
+| `reply_to_review` | ADMIN (`merchant_admin`) | `POST /comment-ms/v1/merchant/reviews/{id}/replies` | Comment Review Agent: auto-draft merchant reply |
 
 ### 4.5 User Tools
 
@@ -201,8 +208,8 @@ Used by: **Customer Support Agent**
 |------|------|-------------|----------------|
 | `get_pay_account` | USER | `GET /payment-ms/v1/customer/pay-accounts/self` | Support Agent: check balance |
 | `top_up_account` | USER | `POST /payment-ms/v1/customer/pay-accounts/self/top-ups` | Support Agent: help top up |
-| `list_redeem_codes` | ADMIN | `GET /payment-ms/v1/merchant/redeem-codes` | AIOps Agent: monitor promotions |
-| `generate_redeem_codes` | ADMIN | `POST /payment-ms/v1/merchant/redeem-codes/generate` | (future) auto-promotion |
+| `list_redeem_codes` | ADMIN (`merchant_admin`) | `GET /payment-ms/v1/merchant/redeem-codes` | AIOps Agent: monitor promotions |
+| `generate_redeem_codes` | ADMIN (`merchant_admin`) | `POST /payment-ms/v1/merchant/redeem-codes/generate` | (future) auto-promotion |
 
 ### 4.7 Notification Tools
 
