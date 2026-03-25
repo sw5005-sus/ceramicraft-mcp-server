@@ -7,8 +7,7 @@
 │                     AI Agents (MCP Clients)              │
 │                                                          │
 │  Product Agent    Search Agent    Customer Support Agent  │
-│  Product Review   Comment Review  AI Security Agent      │
-│  AIOps Monitor                                           │
+│  Product Review   Comment Review  AIOps Monitor          │
 └──────────────────────┬───────────────────────────────────┘
                        │ MCP Protocol (Streamable HTTP)
                        │ Bearer Token (Zitadel JWT)
@@ -80,7 +79,6 @@ JWT, extracts `sub` (user ID), and injects this header into internal HTTP calls.
 | Product Agent | ADMIN | Merchant JWT | Creates/edits products |
 | Product Review Agent | ADMIN | Merchant JWT | Reviews product listings |
 | Comment Review Agent | ADMIN | Merchant/System JWT | Moderates reviews |
-| AI Security Agent | ADMIN | Service Account JWT | Reads logs, flags users |
 | AIOps Monitoring Agent | ADMIN | Service Account JWT | Reads system metrics/logs |
 
 ### Auth Implementation
