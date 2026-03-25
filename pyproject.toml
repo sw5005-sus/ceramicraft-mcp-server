@@ -10,8 +10,6 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "mcp[cli]>=1.26.0",
-    "grpcio>=1.70.0",
-    "protobuf>=5.29.0",
     "pydantic>=2.10.0",
     "pydantic-settings>=2.7.0",
     "httpx>=0.28.0",
@@ -24,7 +22,6 @@ dev = [
     "pytest>=8.0",
     "pytest-asyncio>=0.25.0",
     "pytest-cov>=7.1.0",
-    "grpcio-tools>=1.70.0",
     "ty>=0.0.22",
 ]
 

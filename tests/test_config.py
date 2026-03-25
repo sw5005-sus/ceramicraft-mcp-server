@@ -14,8 +14,6 @@ def test_settings_defaults():
     assert settings.COMMENT_MS_HTTP == "http://comment-ms-svc:8080"
     assert settings.PAYMENT_MS_HTTP == "http://payment-ms-svc:8080"
     assert settings.NOTIFICATION_MS_HTTP == "http://notification-ms-svc:8080"
-    assert settings.LOG_MS_GRPC == "log-ms-svc:50051"
-    assert settings.NOTIFICATION_MS_GRPC == "notification-ms-svc:50051"
     assert "cerami-t6ihrd.us1.zitadel.cloud" in settings.MCP_ZITADEL_ISSUER
     assert settings.MCP_ZITADEL_JWKS_URL.endswith("/oauth/v2/keys")
 

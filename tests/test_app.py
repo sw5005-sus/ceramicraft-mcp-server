@@ -72,16 +72,10 @@ def test_mcp_server_has_tools():
 
     # Notification tools
     assert "register_push_token" in tool_names
-    assert "send_push_notification" in tool_names
-
-    # Log tools
-    assert "record_audit_log" in tool_names
-    assert "query_audit_logs" in tool_names
-    assert "verify_audit_chain" in tool_names
 
 
 def test_mcp_server_tool_count():
-    """Should have exactly 45 tools registered."""
+    """Should have exactly 41 tools registered."""
     mcp = create_mcp_server()
     tools = mcp._tool_manager.list_tools()
-    assert len(tools) == 45
+    assert len(tools) == 41

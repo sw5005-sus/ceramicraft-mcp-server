@@ -3,10 +3,10 @@
 MCP Server for the CeramiCraft multi-agent e-commerce platform. Bridges AI agents and backend microservices via [Model Context Protocol](https://modelcontextprotocol.io).
 
 ```
-AI Agents ──MCP (Streamable HTTP)──▶ MCP Server ──HTTP/gRPC──▶ Backend Microservices
+AI Agents ──MCP (Streamable HTTP)──▶ MCP Server ──HTTP──▶ Backend Microservices
 ```
 
-## Tool Catalog (45 tools)
+## Tool Catalog (41 tools)
 
 ### Product (9 tools)
 
@@ -78,20 +78,11 @@ AI Agents ──MCP (Streamable HTTP)──▶ MCP Server ──HTTP/gRPC──�
 | `list_redeem_codes` | ADMIN | payment-ms | Query redeem codes |
 | `generate_redeem_codes` | ADMIN | payment-ms | Generate new redeem codes |
 
-### Notification (2 tools)
+### Notification (1 tool)
 
 | Tool | Auth | Backend | Description |
 |------|------|---------|-------------|
 | `register_push_token` | USER | notification-ms | Register FCM device push token |
-| `send_push_notification` | ADMIN | notification-ms | Send push notification to user (gRPC, TODO) |
-
-### Audit Log (3 tools)
-
-| Tool | Auth | Backend | Description |
-|------|------|---------|-------------|
-| `record_audit_log` | ADMIN | log-ms | Record an audit log entry (gRPC, TODO) |
-| `query_audit_logs` | ADMIN | log-ms | Query audit logs with filters (gRPC, TODO) |
-| `verify_audit_chain` | ADMIN | log-ms | Verify hash chain integrity (gRPC, TODO) |
 
 ### Summary
 
@@ -99,7 +90,7 @@ AI Agents ──MCP (Streamable HTTP)──▶ MCP Server ──HTTP/gRPC──�
 |------------|-------|-------------|
 | PUBLIC | 3 | No authentication needed |
 | USER | 21 | Requires valid Zitadel JWT |
-| ADMIN | 21 | Requires JWT with `admin` or `merchant` role |
+| ADMIN | 17 | Requires JWT with `admin` or `merchant` role |
 
 ## Auth
 

@@ -4,7 +4,6 @@ from mcp.server.fastmcp import FastMCP
 
 from ceramicraft_mcp_server.tools.cart import register_cart_tools
 from ceramicraft_mcp_server.tools.comment import register_comment_tools
-from ceramicraft_mcp_server.tools.log import register_log_tools
 from ceramicraft_mcp_server.tools.notification import register_notification_tools
 from ceramicraft_mcp_server.tools.order import register_order_tools
 from ceramicraft_mcp_server.tools.payment import register_payment_tools
@@ -28,7 +27,6 @@ def create_mcp_server(host: str = "0.0.0.0", port: int = 8080) -> FastMCP:
     register_order_tools(mcp)  # USER + ADMIN
     register_user_tools(mcp)  # USER
     register_payment_tools(mcp)  # USER + ADMIN
-    register_notification_tools(mcp)  # USER + ADMIN
-    register_log_tools(mcp)  # ADMIN
+    register_notification_tools(mcp)  # USER
 
     return mcp

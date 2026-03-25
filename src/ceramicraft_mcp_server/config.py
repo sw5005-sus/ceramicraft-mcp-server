@@ -21,10 +21,6 @@ class Settings(BaseSettings):
     MCP_SERVER_HOST: str = "0.0.0.0"
     MCP_SERVER_PORT: int = 8080
 
-    # Internal gRPC endpoints (Python services)
-    NOTIFICATION_MS_GRPC: str = "notification-ms-svc:50051"
-    LOG_MS_GRPC: str = "log-ms-svc:50051"
-
     # Internal HTTP endpoints (cluster-internal, built from service names)
     PRODUCT_MS_HTTP: str = _svc_url("product-ms-svc")
     ORDER_MS_HTTP: str = _svc_url("order-ms-svc")

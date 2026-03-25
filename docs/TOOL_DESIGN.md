@@ -22,11 +22,10 @@
 │  └─────────────┘  └──────────────┘  └────────────────┘  │
 │                                                          │
 │  Internal calls: HTTP with X-Original-User-ID header     │
-│                  gRPC for Python services                 │
 └───────┬──────────┬──────────┬──────────┬─────────────────┘
         │          │          │          │
-   product-ms  order-ms  comment-ms   log-ms
-   payment-ms  user-ms   notification-ms
+   product-ms  order-ms  comment-ms  notification-ms
+   payment-ms  user-ms
 ```
 
 ## 2. Communication Strategy
@@ -50,12 +49,6 @@ http://order-ms-svc:8080/order-ms/v1/customer/orders
 identity from `X-Original-User-ID` header (set by Traefik forwardAuth in
 production). When MCP Server calls on behalf of a user, it verifies the agent's
 JWT, extracts `sub` (user ID), and injects this header into internal HTTP calls.
-
-### MCP Server → Python Services (log/notification)
-
-**Protocol: gRPC** (port 50051)
-
-These services only expose gRPC for business logic. HTTP is only for health checks.
 
 ## 3. Auth Model
 
@@ -215,22 +208,11 @@ Used by: **Customer Support Agent**
 
 ### 4.7 Notification Tools
 
-Used by: **Comment Review Agent**, **AI Security Agent**
+Used by: **Customer Support Agent**
 
 | Tool | Auth | Backend Call | Agent Use Case |
 |------|------|-------------|----------------|
-| `send_push_notification` | ADMIN | gRPC `SendUserPush` | Comment Review Agent: notify user of moderation result; Security Agent: alert user |
 | `register_push_token` | USER | `POST /notification-ms/v1/push-token` body: `{user_id, device_id, fcm_token}` | Support Agent: help register device |
-
-### 4.8 Audit Log Tools
-
-Used by: **AI Security Agent**, **AIOps Monitoring Agent**
-
-| Tool | Auth | Backend Call | Agent Use Case |
-|------|------|-------------|----------------|
-| `record_audit_log` | ADMIN | gRPC `RecordAuditLog` | Security Agent: log security events |
-| `query_audit_logs` | ADMIN | gRPC `QueryAuditLogs` | Security Agent: analyze patterns; AIOps: monitoring |
-| `verify_audit_chain` | ADMIN | gRPC `VerifyAuditLogChain` | Security Agent: tamper detection |
 
 ## 5. Tool Count Summary
 
@@ -242,9 +224,8 @@ Used by: **AI Security Agent**, **AIOps Monitoring Agent**
 | Comment/Review | 1 | 3 | 4 | 8 |
 | User | 0 | 6 | 0 | 6 |
 | Payment | 0 | 2 | 2 | 4 |
-| Notification | 0 | 1 | 1 | 2 |
-| Audit Log | 0 | 0 | 3 | 3 |
-| **Total** | **3** | **21** | **21** | **45** |
+| Notification | 0 | 1 | 0 | 1 |
+| **Total** | **3** | **21** | **17** | **41** |
 
 ## 6. Agent → Tool Mapping
 
@@ -254,9 +235,8 @@ Used by: **AI Security Agent**, **AIOps Monitoring Agent**
 | **Customer Support Agent** | All USER tools + PUBLIC product/review tools | USER |
 | **Product Agent** | create/update/get_merchant product tools, get_image_upload_url | ADMIN |
 | **Product Review Agent** | list/get_merchant products, update_product_status | ADMIN |
-| **Comment Review Agent** | list/delete/pin/reply reviews, send_push_notification | ADMIN |
-| **AI Security Agent** | record/query/verify audit logs, send_push_notification | ADMIN |
-| **AIOps Monitoring Agent** | query_audit_logs, get_order_stats, list_merchant_orders | ADMIN |
+| **Comment Review Agent** | list/delete/pin/reply reviews | ADMIN |
+| **AIOps Monitoring Agent** | get_order_stats, list_merchant_orders | ADMIN |
 
 ## 7. Internal HTTP Client Design
 
@@ -281,20 +261,16 @@ class InternalHTTPClient:
 
 ## 8. Implementation Priority
 
-### Phase 1 — Core (Customer Support + Search)
+### Phase 1 — Core (Customer Support + Search) ✅
 1. Internal HTTP client with X-Original-User-ID injection
-2. Product tools (PUBLIC): search, get, categories
+2. Product tools (PUBLIC): search, get
 3. Cart tools (USER)
 4. Order tools (USER): list, detail
 5. User tools (USER): profile, addresses
 6. Auth helpers: `require_user()`, `require_admin()`
 
-### Phase 2 — Admin (Product + Comment Review)
+### Phase 2 — Admin (Product + Comment Review) ✅
 7. Product merchant tools (ADMIN)
 8. Comment review tools (ADMIN)
-9. gRPC client for notification-ms
-
-### Phase 3 — Security & Ops
-10. gRPC client for log-ms
-11. Audit log tools (ADMIN)
-12. Payment tools
+9. Payment tools (USER + ADMIN)
+10. Notification: register_push_token (USER)
