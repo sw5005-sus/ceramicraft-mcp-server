@@ -1,5 +1,7 @@
 """Entrypoint for the CeramiCraft MCP Server."""
 
+import sys
+
 from ceramicraft_mcp_server.app import create_mcp_server
 from ceramicraft_mcp_server.config import get_settings
 
@@ -11,7 +13,11 @@ def main() -> None:
         host=settings.MCP_SERVER_HOST,
         port=settings.MCP_SERVER_PORT,
     )
-    mcp.run(transport="streamable-http")
+    try:
+        mcp.run(transport="streamable-http")
+    except KeyboardInterrupt:
+        print("\nMCP Server stopped.")
+        sys.exit(0)
 
 
 if __name__ == "__main__":
