@@ -20,14 +20,17 @@ class Settings(BaseSettings):
     LOG_MS_GRPC: str = Field(default="log-ms-svc:50051")
 
     # Internal HTTP endpoints (Go services, port 8080)
-    PRODUCT_MS_HTTP: str = Field(default="http://product-ms-svc:8080")
-    ORDER_MS_HTTP: str = Field(default="http://order-ms-svc:8080")
-    USER_MS_HTTP: str = Field(default="http://user-ms-svc:8080")
-    COMMENT_MS_HTTP: str = Field(default="http://comment-ms-svc:8080")
-    PAYMENT_MS_HTTP: str = Field(default="http://payment-ms-svc:8080")
+    # Cluster-internal URLs — HTTP is safe within K8s network
+    PRODUCT_MS_HTTP: str = Field(default="http://product-ms-svc:8080")  # NOSONAR
+    ORDER_MS_HTTP: str = Field(default="http://order-ms-svc:8080")  # NOSONAR
+    USER_MS_HTTP: str = Field(default="http://user-ms-svc:8080")  # NOSONAR
+    COMMENT_MS_HTTP: str = Field(default="http://comment-ms-svc:8080")  # NOSONAR
+    PAYMENT_MS_HTTP: str = Field(default="http://payment-ms-svc:8080")  # NOSONAR
 
     # Internal HTTP endpoints (Python services, port 8080)
-    NOTIFICATION_MS_HTTP: str = Field(default="http://notification-ms-svc:8080")
+    NOTIFICATION_MS_HTTP: str = Field(
+        default="http://notification-ms-svc:8080"
+    )  # NOSONAR
 
     # Zitadel (MCP-specific, prefixed to avoid conflict with other services)
     MCP_ZITADEL_ISSUER: str = Field(default="https://cerami-t6ihrd.us1.zitadel.cloud")
