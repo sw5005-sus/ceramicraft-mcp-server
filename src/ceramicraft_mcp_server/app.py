@@ -1,6 +1,8 @@
 """MCP Server application factory."""
 
 from mcp.server.fastmcp import FastMCP
+from starlette.requests import Request
+from starlette.responses import JSONResponse
 
 from ceramicraft_mcp_server.tools.cart import register_cart_tools
 from ceramicraft_mcp_server.tools.comment import register_comment_tools
@@ -19,6 +21,11 @@ def create_mcp_server(host: str = "0.0.0.0", port: int = 8080) -> FastMCP:
         host=host,
         port=port,
     )
+
+    # Health check endpoint for K8s liveness/readiness probes
+    @mcp.custom_route("/health", methods=["GET"])
+    async def health_check(request: Request) -> JSONResponse:
+        return JSONResponse({"status": "ok"})
 
     # Register tool groups
     register_product_tools(mcp)  # PUBLIC + ADMIN
