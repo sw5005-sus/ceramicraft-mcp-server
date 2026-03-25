@@ -139,7 +139,6 @@ Used by: **Search Intention Agent**, **Customer Support Agent**, **Product Agent
 |------|------|-------------|----------------|
 | `search_products` | PUBLIC | `GET /product-ms/v1/customer/products?keyword=...` | Search Agent: semantic search → keyword extraction → call this |
 | `get_product` | PUBLIC | `GET /product-ms/v1/customer/product/{id}` | Support Agent: show product details to user |
-| `list_categories` | PUBLIC | `GET /product-ms/v1/customer/products` (extract categories) | Search Agent: category-based filtering |
 | `create_product` | ADMIN | `POST /product-ms/v1/merchant/products` | Product Agent: auto-generate listing |
 | `update_product` | ADMIN | `PUT /product-ms/v1/merchant/products/{id}` | Product Agent: edit descriptions |
 | `update_product_status` | ADMIN | `PATCH /product-ms/v1/merchant/products/{id}/status` | Product Review Agent: publish/unpublish after review |
@@ -221,7 +220,7 @@ Used by: **Comment Review Agent**, **AI Security Agent**
 | Tool | Auth | Backend Call | Agent Use Case |
 |------|------|-------------|----------------|
 | `send_push_notification` | ADMIN | gRPC `SendUserPush` | Comment Review Agent: notify user of moderation result; Security Agent: alert user |
-| `register_push_token` | USER | `POST /notification-ms/v1/push-token` | Support Agent: help register device |
+| `register_push_token` | USER | `POST /notification-ms/v1/push-token` body: `{user_id, device_id, fcm_token}` | Support Agent: help register device |
 
 ### 4.8 Audit Log Tools
 
@@ -237,7 +236,7 @@ Used by: **AI Security Agent**, **AIOps Monitoring Agent**
 
 | Category | PUBLIC | USER | ADMIN | Total |
 |----------|--------|------|-------|-------|
-| Product | 3 | 0 | 7 | 10 |
+| Product | 2 | 0 | 7 | 9 |
 | Cart | 0 | 5 | 0 | 5 |
 | Order | 0 | 4 | 4 | 8 |
 | Comment/Review | 1 | 3 | 4 | 8 |
@@ -245,13 +244,13 @@ Used by: **AI Security Agent**, **AIOps Monitoring Agent**
 | Payment | 0 | 2 | 2 | 4 |
 | Notification | 0 | 1 | 1 | 2 |
 | Audit Log | 0 | 0 | 3 | 3 |
-| **Total** | **4** | **21** | **21** | **46** |
+| **Total** | **3** | **21** | **21** | **45** |
 
 ## 6. Agent → Tool Mapping
 
 | Agent | Primary Tools | Auth Level |
 |-------|--------------|------------|
-| **Search Intention Agent** | search_products, get_product, list_categories | PUBLIC |
+| **Search Intention Agent** | search_products, get_product | PUBLIC |
 | **Customer Support Agent** | All USER tools + PUBLIC product/review tools | USER |
 | **Product Agent** | create/update/get_merchant product tools, get_image_upload_url | ADMIN |
 | **Product Review Agent** | list/get_merchant products, update_product_status | ADMIN |

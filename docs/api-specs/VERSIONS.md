@@ -12,6 +12,18 @@ Records which commit each spec was extracted from. Update this when re-pulling s
 | log-ms | log-ms.proto | ceramicraft-log-mservice | `2cc75f2` | 2026-03-24 |
 | notification-ms | notification-ms.proto | ceramicraft-notification-mservice | `ae2ba61` | 2026-03-24 |
 
+## JSON API Specs (`json-apis/`)
+
+Full Swagger/OpenAPI JSON files provided by Rocky (2026-03-25). These are the
+authoritative API specs for cross-referencing MCP tool implementations.
+
+- `json-apis/product-ms.json` — includes cart endpoints
+- `json-apis/order-ms.json`
+- `json-apis/comment-ms.json`
+- `json-apis/user-ms.json`
+- `json-apis/payment-ms.json`
+- `json-apis/notification-ms.json`
+
 ## How to refresh
 
 ```bash

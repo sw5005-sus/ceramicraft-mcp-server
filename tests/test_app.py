@@ -81,7 +81,7 @@ def test_mcp_server_has_tools():
 
 
 def test_mcp_server_tool_count():
-    """Should have exactly 46 tools registered."""
+    """Should have exactly 45 tools registered."""
     mcp = create_mcp_server()
     tools = mcp._tool_manager.list_tools()
     assert len(tools) == 45
