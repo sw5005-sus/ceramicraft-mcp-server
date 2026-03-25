@@ -1,93 +1,145 @@
 # ceramicraft-mcp-server
 
-MCP (Model Context Protocol) Server for the CeramiCraft multi-agent e-commerce platform.
-
-## Overview
-
-This service acts as the bridge between AI agents and CeramiCraft backend microservices. Agents communicate via the [MCP protocol](https://modelcontextprotocol.io), and the MCP Server translates tool calls into internal gRPC/HTTP requests to the appropriate microservices.
-
-## Architecture
+MCP Server for the CeramiCraft multi-agent e-commerce platform. Bridges AI agents and backend microservices via [Model Context Protocol](https://modelcontextprotocol.io).
 
 ```
-Agent (MCP Client)
-    ↓ MCP Protocol (Streamable HTTP)
-MCP Server (this service)
-    ↓ gRPC / HTTP (cluster internal)
-Backend Microservices (product, order, user, comment, payment, notification, log)
+AI Agents ──MCP (Streamable HTTP)──▶ MCP Server ──HTTP/gRPC──▶ Backend Microservices
 ```
 
-## Tools
+## Tool Catalog (45 tools)
 
-### Public (no authentication required)
-| Tool | Description |
-|------|-------------|
-| `search_products` | Search ceramic products by keyword |
-| `get_product` | Get product details by ID |
-| `list_product_categories` | List all product categories |
-| `list_comments` | List comments for a product |
+### Product (9 tools)
 
-### Authenticated (requires user token)
-| Tool | Description |
-|------|-------------|
-| `add_comment` | Add a comment to a product |
-| `list_my_orders` | List authenticated user's orders |
-| `get_order_detail` | Get order details |
-| `get_my_profile` | Get user profile |
-| `list_my_addresses` | List user's shipping addresses |
-| `register_push_token` | Register FCM push token |
+| Tool | Auth | Backend | Description |
+|------|------|---------|-------------|
+| `search_products` | PUBLIC | product-ms | Search products by keyword, category, price range |
+| `get_product` | PUBLIC | product-ms | Get product detail by ID |
+| `create_product` | ADMIN | product-ms | Create a new product listing |
+| `update_product` | ADMIN | product-ms | Edit product info (name, desc, price, ceramic attributes) |
+| `update_product_status` | ADMIN | product-ms | Publish / unpublish a product |
+| `update_product_stock` | ADMIN | product-ms | Update inventory stock |
+| `get_merchant_product` | ADMIN | product-ms | Get full merchant-view product detail |
+| `list_merchant_products` | ADMIN | product-ms | List products (merchant dashboard) |
+| `get_image_upload_url` | ADMIN | product-ms | Get presigned URL for image upload |
 
-### Admin (requires admin role)
-| Tool | Description |
-|------|-------------|
-| `query_audit_logs` | Query audit logs with filters |
-| `verify_audit_chain` | Verify audit log hash chain integrity |
+### Cart (5 tools)
+
+| Tool | Auth | Backend | Description |
+|------|------|---------|-------------|
+| `get_cart` | USER | product-ms | View user's cart |
+| `add_to_cart` | USER | product-ms | Add item to cart |
+| `update_cart_item` | USER | product-ms | Update cart item quantity / selection |
+| `remove_cart_item` | USER | product-ms | Remove item from cart |
+| `estimate_cart_price` | USER | product-ms | Calculate cart total before checkout |
+
+### Order (8 tools)
+
+| Tool | Auth | Backend | Description |
+|------|------|---------|-------------|
+| `create_order` | USER | order-ms | Place an order with receiver info |
+| `list_my_orders` | USER | order-ms | List user's order history |
+| `get_order_detail` | USER | order-ms | Get order detail by order number |
+| `confirm_receipt` | USER | order-ms | Confirm delivery received |
+| `get_order_stats` | ADMIN | order-ms | Get order statistics dashboard |
+| `list_merchant_orders` | ADMIN | order-ms | List orders (merchant view, filterable) |
+| `get_merchant_order_detail` | ADMIN | order-ms | Get order detail (merchant view) |
+| `ship_order` | ADMIN | order-ms | Ship an order with tracking number |
+
+### Review (8 tools)
+
+| Tool | Auth | Backend | Description |
+|------|------|---------|-------------|
+| `list_product_reviews` | PUBLIC | comment-ms | Get reviews for a product |
+| `get_user_reviews` | USER | comment-ms | Get current user's reviews |
+| `create_review` | USER | comment-ms | Post a product review |
+| `like_review` | USER | comment-ms | Like a review |
+| `list_reviews_admin` | ADMIN | comment-ms | List reviews with filters (moderation) |
+| `delete_review` | ADMIN | comment-ms | Delete a review |
+| `pin_review` | ADMIN | comment-ms | Pin / unpin a review |
+| `reply_to_review` | ADMIN | comment-ms | Reply to a review as merchant |
+
+### User (6 tools)
+
+| Tool | Auth | Backend | Description |
+|------|------|---------|-------------|
+| `get_my_profile` | USER | user-ms | Get user profile |
+| `update_my_profile` | USER | user-ms | Update name / email / avatar |
+| `list_my_addresses` | USER | user-ms | List shipping addresses |
+| `create_address` | USER | user-ms | Add a shipping address |
+| `update_address` | USER | user-ms | Edit a shipping address |
+| `delete_address` | USER | user-ms | Delete a shipping address |
+
+### Payment (4 tools)
+
+| Tool | Auth | Backend | Description |
+|------|------|---------|-------------|
+| `get_pay_account` | USER | payment-ms | Get wallet balance |
+| `top_up_account` | USER | payment-ms | Top up with redeem code |
+| `list_redeem_codes` | ADMIN | payment-ms | Query redeem codes |
+| `generate_redeem_codes` | ADMIN | payment-ms | Generate new redeem codes |
+
+### Notification (2 tools)
+
+| Tool | Auth | Backend | Description |
+|------|------|---------|-------------|
+| `register_push_token` | USER | notification-ms | Register FCM device push token |
+| `send_push_notification` | ADMIN | notification-ms | Send push notification to user (gRPC, TODO) |
+
+### Audit Log (3 tools)
+
+| Tool | Auth | Backend | Description |
+|------|------|---------|-------------|
+| `record_audit_log` | ADMIN | log-ms | Record an audit log entry (gRPC, TODO) |
+| `query_audit_logs` | ADMIN | log-ms | Query audit logs with filters (gRPC, TODO) |
+| `verify_audit_chain` | ADMIN | log-ms | Verify hash chain integrity (gRPC, TODO) |
+
+### Summary
+
+| Auth Level | Count | Description |
+|------------|-------|-------------|
+| PUBLIC | 3 | No authentication needed |
+| USER | 21 | Requires valid Zitadel JWT |
+| ADMIN | 21 | Requires JWT with `admin` or `merchant` role |
+
+## Auth
+
+JWT tokens are verified against [Zitadel](https://zitadel.com) JWKS. User identity is extracted from the `sub` claim and passed to backends via `X-Original-User-ID` header.
 
 ## Development
 
-### Prerequisites
-- Python 3.12+
-- [uv](https://docs.astral.sh/uv/) package manager
-
-### Setup
 ```bash
+# Install
 uv sync
-```
 
-### Run locally
-```bash
+# Run
 uv run python -m ceramicraft_mcp_server.serve
-```
 
-### Lint & Format
-```bash
-uv run ruff check src/ tests/
-uv run ruff format src/ tests/
-```
+# Lint & format
+uv run ruff check .
+uv run ruff format .
 
-### Type check
-```bash
+# Type check
 uv run ty check src/
-```
 
-### Test
-```bash
-uv run pytest
-```
-
-### Test with MCP Inspector
-```bash
-uv run python -m ceramicraft_mcp_server.serve &
-npx -y @modelcontextprotocol/inspector
-# Connect to http://localhost:8080/mcp
+# Test
+uv run pytest --cov=src/ceramicraft_mcp_server --cov-report=term-missing
 ```
 
 ## Configuration
 
-See [`.env.example`](.env.example) for all available environment variables.
+All service URLs default to K8s cluster-internal addresses. Secrets (Zitadel credentials, DB passwords) are injected via Vault / ExternalSecret.
 
-## Docker
-
-```bash
-docker build -t ceramicraft-mcp-server .
-docker run -p 8080:8080 ceramicraft-mcp-server
-```
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `MCP_SERVER_HOST` | Bind host | `0.0.0.0` |
+| `MCP_SERVER_PORT` | Bind port | `8080` |
+| `PRODUCT_MS_HTTP` | Product service URL | `http://product-ms-svc:8080` |
+| `ORDER_MS_HTTP` | Order service URL | `http://order-ms-svc:8080` |
+| `USER_MS_HTTP` | User service URL | `http://user-ms-svc:8080` |
+| `COMMENT_MS_HTTP` | Comment service URL | `http://comment-ms-svc:8080` |
+| `PAYMENT_MS_HTTP` | Payment service URL | `http://payment-ms-svc:8080` |
+| `NOTIFICATION_MS_HTTP` | Notification service URL | `http://notification-ms-svc:8080` |
+| `MCP_ZITADEL_ISSUER` | Zitadel issuer URL | *(set)* |
+| `MCP_ZITADEL_JWKS_URL` | Zitadel JWKS endpoint | *(set)* |
+| `MCP_ZITADEL_CLIENT_ID` | Zitadel client ID | *(from Vault)* |
+| `MCP_ZITADEL_CLIENT_SECRET` | Zitadel client secret | *(from Vault)* |
