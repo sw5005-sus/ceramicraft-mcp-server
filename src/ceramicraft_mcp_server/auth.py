@@ -160,8 +160,9 @@ async def verify_token(token: str) -> AuthenticatedUser:
     jwks_client = _get_jwks_client()
 
     try:
-        # Decode header to find the key ID
-        unverified_header = jwt.get_unverified_header(token)
+        # Read kid from header (unverified) to look up the correct JWKS key.
+        # The actual signature verification happens in jwt.decode() below.
+        unverified_header = jwt.get_unverified_header(token)  # NOSONAR
         kid = unverified_header.get("kid")
         alg = unverified_header.get("alg", "RS256")
 
