@@ -78,10 +78,10 @@ JWT, extracts `sub` (user ID), and injects this header into internal HTTP calls.
 |-------|-----------|-----------------|-------|
 | Search Intention Agent | PUBLIC | None | Browses products anonymously |
 | Customer Support Agent | USER | End-user JWT | Acts on behalf of logged-in customer |
-| Product Agent | ADMIN | Merchant JWT | Creates/edits products |
-| Product Review Agent | ADMIN | Merchant JWT | Reviews product listings |
-| Comment Review Agent | ADMIN | Merchant/System JWT | Moderates reviews |
-| AIOps Monitoring Agent | ADMIN | Service Account JWT | Reads system metrics/logs |
+| Product Agent | ADMIN (`merchant_admin`, `product_editor`) | Service Account JWT | Creates/edits products |
+| Product Review Agent | ADMIN (`merchant_admin`, `product_auditor`) | Service Account JWT | Reviews product listings |
+| Comment Review Agent | ADMIN (`merchant_admin`) | Service Account JWT | Moderates reviews |
+| AIOps Monitoring Agent | ADMIN (`merchant_admin`) | Service Account JWT | Reads system metrics/logs |
 
 ### Auth Implementation
 
@@ -238,10 +238,10 @@ Used by: **Customer Support Agent**
 |-------|--------------|------------|
 | **Search Intention Agent** | search_products, get_product | PUBLIC |
 | **Customer Support Agent** | All USER tools + PUBLIC product/review tools | USER |
-| **Product Agent** | create/update/get_merchant product tools, get_image_upload_url | ADMIN |
-| **Product Review Agent** | list/get_merchant products, update_product_status | ADMIN |
-| **Comment Review Agent** | list/delete/pin/reply reviews | ADMIN |
-| **AIOps Monitoring Agent** | get_order_stats, list_merchant_orders | ADMIN |
+| **Product Agent** | create/update/get_merchant product tools, get_image_upload_url | `merchant_admin`, `product_editor` |
+| **Product Review Agent** | list/get_merchant products, update_product_status | `merchant_admin`, `product_auditor` |
+| **Comment Review Agent** | list/delete/pin/reply reviews | `merchant_admin` |
+| **AIOps Monitoring Agent** | get_order_stats, list_merchant_orders | `merchant_admin` |
 
 ## 7. Internal HTTP Client Design
 
