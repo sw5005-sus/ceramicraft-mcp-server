@@ -232,7 +232,7 @@ def _extract_roles(payload: dict[str, Any]) -> list[str]:
     """Extract roles from Zitadel token claims.
 
     Zitadel puts roles in `urn:zitadel:iam:org:project:roles` claim
-    as a dict like {"admin": {"orgId": "..."}, "user": {"orgId": "..."}}.
+    as a dict like {"merchant_admin": {"orgId": "..."}, "product_editor": {"orgId": "..."}}.
     """
     roles_claim = payload.get("urn:zitadel:iam:org:project:roles", {})
     if isinstance(roles_claim, dict):
