@@ -133,7 +133,7 @@ def register_comment_tools(mcp: FastMCP) -> None:
         product_id: int,
         stars: int = 0,
     ) -> dict[str, Any]:
-        """List reviews for moderation. Requires admin/merchant role.
+        """List reviews for moderation. Requires ADMIN role.
 
         Args:
             ctx: MCP context (injected automatically).
@@ -155,7 +155,7 @@ def register_comment_tools(mcp: FastMCP) -> None:
 
     @mcp.tool()
     async def delete_review(ctx: Context, review_id: str) -> dict[str, Any]:
-        """Delete a review (moderation). Requires admin/merchant role.
+        """Delete a review (moderation). Requires ADMIN role.
 
         Args:
             ctx: MCP context (injected automatically).
@@ -179,7 +179,7 @@ def register_comment_tools(mcp: FastMCP) -> None:
         review_id: str,
         is_pinned: bool = True,
     ) -> dict[str, Any]:
-        """Pin or unpin a review. Requires admin/merchant role.
+        """Pin or unpin a review. Requires ADMIN role.
 
         Args:
             ctx: MCP context (injected automatically).
@@ -205,7 +205,7 @@ def register_comment_tools(mcp: FastMCP) -> None:
         review_id: str,
         content: str,
     ) -> dict[str, Any]:
-        """Reply to a review as merchant. Requires admin/merchant role.
+        """Reply to a review as merchant. Requires ADMIN role.
 
         Args:
             ctx: MCP context (injected automatically).

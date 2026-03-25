@@ -72,7 +72,7 @@ def register_payment_tools(mcp: FastMCP) -> None:
         limit: int = 20,
         used: bool | None = None,
     ) -> dict[str, Any]:
-        """List redeem codes. Requires admin/merchant role.
+        """List redeem codes. Requires ADMIN role.
 
         Args:
             ctx: MCP context (injected automatically).
@@ -105,7 +105,7 @@ def register_payment_tools(mcp: FastMCP) -> None:
         amount: int,
         count: int = 1,
     ) -> dict[str, Any]:
-        """Generate new redeem codes. Requires admin/merchant role.
+        """Generate new redeem codes. Requires ADMIN role.
 
         Args:
             ctx: MCP context (injected automatically).

@@ -90,7 +90,7 @@ AI Agents ──MCP (Streamable HTTP)──▶ MCP Server ──HTTP──▶ Ba
 |------------|-------|-------------|
 | PUBLIC | 3 | No authentication needed |
 | USER | 21 | Requires valid Zitadel JWT |
-| ADMIN | 17 | Requires JWT with `admin` or `merchant` role |
+| ADMIN | 17 | Requires JWT with `merchant_admin`, `product_auditor`, or `product_editor` role |
 
 ## Auth
 

@@ -63,7 +63,7 @@ JWT, extracts `sub` (user ID), and injects this header into internal HTTP calls.
 │  user_id and passes it to backend via                    │
 │  X-Original-User-ID header.                              │
 ├─────────────────────────────────────────────────────────┤
-│  Level 2: ADMIN — Valid JWT + admin/merchant role        │
+│  Level 2: ADMIN — Valid JWT + merchant_admin/product_auditor/product_editor role │
 │  Token must contain role in                              │
 │  `urn:zitadel:iam:org:project:roles` claim.              │
 │  Used by Product Agent, Comment Review Agent, etc.       │

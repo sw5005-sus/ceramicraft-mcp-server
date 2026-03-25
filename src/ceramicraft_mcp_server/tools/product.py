@@ -89,7 +89,7 @@ def register_product_tools(mcp: FastMCP) -> None:
         care_instructions: str = "",
         status: int = 0,
     ) -> dict[str, Any]:
-        """Create a new product listing. Requires admin/merchant role.
+        """Create a new product listing. Requires ADMIN role.
 
         Args:
             ctx: MCP context (injected automatically).
@@ -155,7 +155,7 @@ def register_product_tools(mcp: FastMCP) -> None:
         capacity: str | None = None,
         care_instructions: str | None = None,
     ) -> dict[str, Any]:
-        """Update an existing product. Requires admin/merchant role.
+        """Update an existing product. Requires ADMIN role.
 
         Args:
             ctx: MCP context (injected automatically).
@@ -212,7 +212,7 @@ def register_product_tools(mcp: FastMCP) -> None:
         product_id: int,
         status: int,
     ) -> dict[str, Any]:
-        """Update product publish status. Requires admin/merchant role.
+        """Update product publish status. Requires ADMIN role.
 
         Args:
             ctx: MCP context (injected automatically).
@@ -238,7 +238,7 @@ def register_product_tools(mcp: FastMCP) -> None:
         product_id: int,
         stock: int,
     ) -> dict[str, Any]:
-        """Update product stock quantity. Requires admin/merchant role.
+        """Update product stock quantity. Requires ADMIN role.
 
         Args:
             ctx: MCP context (injected automatically).
@@ -263,7 +263,7 @@ def register_product_tools(mcp: FastMCP) -> None:
         ctx: Context,
         product_id: int,
     ) -> dict[str, Any]:
-        """Get product detail from merchant view. Requires admin/merchant role.
+        """Get product detail from merchant view. Requires ADMIN role.
 
         Args:
             ctx: MCP context (injected automatically).
@@ -289,7 +289,7 @@ def register_product_tools(mcp: FastMCP) -> None:
         offset: int = 0,
         order_by: int = 0,
     ) -> dict[str, Any]:
-        """List products from merchant view. Requires admin/merchant role.
+        """List products from merchant view. Requires ADMIN role.
 
         Args:
             ctx: MCP context (injected automatically).
@@ -322,7 +322,7 @@ def register_product_tools(mcp: FastMCP) -> None:
         ctx: Context,
         image_type: str = "jpg",
     ) -> dict[str, Any]:
-        """Get a presigned URL for product image upload. Requires admin/merchant role.
+        """Get a presigned URL for product image upload. Requires ADMIN role.
 
         Args:
             ctx: MCP context (injected automatically).

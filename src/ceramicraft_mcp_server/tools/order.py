@@ -152,7 +152,7 @@ def register_order_tools(mcp: FastMCP) -> None:
 
     @mcp.tool()
     async def get_order_stats(ctx: Context) -> dict[str, Any]:
-        """Get order statistics. Requires admin/merchant role.
+        """Get order statistics. Requires ADMIN role.
 
         Args:
             ctx: MCP context (injected automatically).
@@ -180,7 +180,7 @@ def register_order_tools(mcp: FastMCP) -> None:
         start_time: str = "",
         end_time: str = "",
     ) -> dict[str, Any]:
-        """List all orders from merchant view. Requires admin/merchant role.
+        """List all orders from merchant view. Requires ADMIN role.
 
         Args:
             ctx: MCP context (injected automatically).
@@ -222,7 +222,7 @@ def register_order_tools(mcp: FastMCP) -> None:
         ctx: Context,
         order_no: str,
     ) -> dict[str, Any]:
-        """Get order detail from merchant view. Requires admin/merchant role.
+        """Get order detail from merchant view. Requires ADMIN role.
 
         Args:
             ctx: MCP context (injected automatically).
@@ -246,7 +246,7 @@ def register_order_tools(mcp: FastMCP) -> None:
         order_no: str,
         tracking_no: str,
     ) -> dict[str, Any]:
-        """Mark an order as shipped. Requires admin/merchant role.
+        """Mark an order as shipped. Requires ADMIN role.
 
         Args:
             ctx: MCP context (injected automatically).

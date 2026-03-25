@@ -9,7 +9,7 @@ from ceramicraft_mcp_server.auth import AuthenticatedUser
 
 MOCK_USER = AuthenticatedUser(user_id="42", roles=["customer"], email="u@test.com")
 MOCK_ADMIN = AuthenticatedUser(
-    user_id="1", roles=["admin", "merchant"], email="a@test.com"
+    user_id="1", roles=["merchant_admin", "product_editor"], email="a@test.com"
 )
 
 

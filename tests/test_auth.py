@@ -35,19 +35,25 @@ def test_authenticated_user_defaults():
 
 
 def test_authenticated_user_admin_role():
-    """User with admin role is recognized as admin."""
-    user = AuthenticatedUser(user_id="1", roles=["admin", "user"])
+    """User with merchant_admin role is recognized as admin."""
+    user = AuthenticatedUser(user_id="1", roles=["merchant_admin", "user"])
     assert user.is_admin
 
 
-def test_authenticated_user_merchant_role():
-    """User with merchant role is recognized as admin."""
-    user = AuthenticatedUser(user_id="1", roles=["merchant"])
+def test_authenticated_user_product_auditor_role():
+    """User with product_auditor role is recognized as admin."""
+    user = AuthenticatedUser(user_id="1", roles=["product_auditor"])
+    assert user.is_admin
+
+
+def test_authenticated_user_product_editor_role():
+    """User with product_editor role is recognized as admin."""
+    user = AuthenticatedUser(user_id="1", roles=["product_editor"])
     assert user.is_admin
 
 
 def test_authenticated_user_non_admin():
-    """User without admin/merchant is not admin."""
+    """User without admin roles is not admin."""
     user = AuthenticatedUser(user_id="1", roles=["customer", "user"])
     assert not user.is_admin
 
@@ -275,7 +281,7 @@ async def test_require_admin_success():
     ctx = MagicMock()
     ctx.headers = {"authorization": "Bearer valid.token"}
     ctx.meta = None
-    admin = AuthenticatedUser(user_id="1", roles=["admin"])
+    admin = AuthenticatedUser(user_id="1", roles=["merchant_admin"])
 
     with patch(
         "ceramicraft_mcp_server.auth.verify_token",
@@ -404,7 +410,7 @@ async def test_verify_token_success():
                     "email": "test@example.com",
                     "name": "Test User",
                     "urn:zitadel:iam:org:project:roles": {
-                        "admin": {"orgId": "1"},
+                        "merchant_admin": {"orgId": "1"},
                     },
                 },
             ),
@@ -413,7 +419,7 @@ async def test_verify_token_success():
             assert user.user_id == "42"
             assert user.email == "test@example.com"
             assert user.name == "Test User"
-            assert "admin" in user.roles
+            assert "merchant_admin" in user.roles
             assert user.is_admin
 
 
