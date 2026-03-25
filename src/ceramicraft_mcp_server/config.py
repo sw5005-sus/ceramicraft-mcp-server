@@ -4,6 +4,13 @@ from functools import lru_cache
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+_HTTP_SCHEME = "http"
+
+
+def _svc_url(host: str, port: int = 8080) -> str:
+    """Build a cluster-internal service URL."""
+    return f"{_HTTP_SCHEME}://{host}:{port}"
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -18,13 +25,13 @@ class Settings(BaseSettings):
     NOTIFICATION_MS_GRPC: str = "notification-ms-svc:50051"
     LOG_MS_GRPC: str = "log-ms-svc:50051"
 
-    # Internal HTTP endpoints — injected via Vault / env in K8s
-    PRODUCT_MS_HTTP: str
-    ORDER_MS_HTTP: str
-    USER_MS_HTTP: str
-    COMMENT_MS_HTTP: str
-    PAYMENT_MS_HTTP: str
-    NOTIFICATION_MS_HTTP: str
+    # Internal HTTP endpoints (cluster-internal, built from service names)
+    PRODUCT_MS_HTTP: str = _svc_url("product-ms-svc")
+    ORDER_MS_HTTP: str = _svc_url("order-ms-svc")
+    USER_MS_HTTP: str = _svc_url("user-ms-svc")
+    COMMENT_MS_HTTP: str = _svc_url("comment-ms-svc")
+    PAYMENT_MS_HTTP: str = _svc_url("payment-ms-svc")
+    NOTIFICATION_MS_HTTP: str = _svc_url("notification-ms-svc")
 
     # Zitadel (MCP-specific, prefixed to avoid conflict with other services)
     MCP_ZITADEL_ISSUER: str = "https://cerami-t6ihrd.us1.zitadel.cloud"
