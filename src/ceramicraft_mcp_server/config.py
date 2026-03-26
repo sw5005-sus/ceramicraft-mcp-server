@@ -32,8 +32,7 @@ class Settings(BaseSettings):
     # Zitadel (MCP-specific, prefixed to avoid conflict with other services)
     MCP_ZITADEL_ISSUER: str = "https://cerami-t6ihrd.us1.zitadel.cloud"
     MCP_ZITADEL_JWKS_URL: str = "https://cerami-t6ihrd.us1.zitadel.cloud/oauth/v2/keys"
-    MCP_ZITADEL_CLIENT_ID: str = ""
-    MCP_ZITADEL_CLIENT_SECRET: str = ""
+
 
 
 @lru_cache

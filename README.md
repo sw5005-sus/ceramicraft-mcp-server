@@ -132,5 +132,4 @@ All service URLs default to K8s cluster-internal addresses. Secrets (Zitadel cre
 | `NOTIFICATION_MS_HTTP` | Notification service URL | `http://notification-ms-svc:8080` |
 | `MCP_ZITADEL_ISSUER` | Zitadel issuer URL | *(set)* |
 | `MCP_ZITADEL_JWKS_URL` | Zitadel JWKS endpoint | *(set)* |
-| `MCP_ZITADEL_CLIENT_ID` | Zitadel client ID | *(from Vault)* |
-| `MCP_ZITADEL_CLIENT_SECRET` | Zitadel client secret | *(from Vault)* |
+
