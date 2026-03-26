@@ -2,8 +2,13 @@
 
 import sys
 
+import dttb
+
 from ceramicraft_mcp_server.app import create_mcp_server
 from ceramicraft_mcp_server.config import get_settings
+
+# Apply dttb tracebacks for timestamps on exceptions
+dttb.apply()
 
 
 def main() -> None:
