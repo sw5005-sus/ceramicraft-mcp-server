@@ -34,7 +34,6 @@ class Settings(BaseSettings):
     MCP_ZITADEL_JWKS_URL: str = "https://cerami-t6ihrd.us1.zitadel.cloud/oauth/v2/keys"
 
 
-
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
