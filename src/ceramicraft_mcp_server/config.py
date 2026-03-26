@@ -1,6 +1,6 @@
 """Configuration for the MCP server."""
 
-from functools import lru_cache
+from functools import cache
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -34,6 +34,6 @@ class Settings(BaseSettings):
     MCP_ZITADEL_JWKS_URL: str = "https://cerami-t6ihrd.us1.zitadel.cloud/oauth/v2/keys"
 
 
-@lru_cache
+@cache
 def get_settings() -> Settings:
     return Settings()
