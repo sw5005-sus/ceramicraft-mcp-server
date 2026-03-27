@@ -25,6 +25,20 @@ from ceramicraft_mcp_server.auth import (
 )
 
 
+def _make_ctx(authorization: str | None = None) -> MagicMock:
+    """Create a mock MCP Context with Starlette-style request headers.
+
+    The real FastMCP Context exposes HTTP headers via
+    ``ctx.request_context.request.headers`` (a Starlette Request).
+    """
+    ctx = MagicMock()
+    if authorization is not None:
+        ctx.request_context.request.headers = {"authorization": authorization}
+    else:
+        ctx.request_context.request.headers = {}
+    return ctx
+
+
 # ─── AuthenticatedUser ─────────────────────────────────────
 
 
@@ -173,49 +187,34 @@ async def test_jwks_client_caches_keys():
 # ─── _extract_bearer_token ─────────────────────────────────
 
 
-def test_extract_bearer_token_from_headers():
-    """Extract token from ctx.headers."""
-    ctx = MagicMock()
-    ctx.headers = {"authorization": "Bearer abc123"}
-    ctx.meta = None
+def test_extract_bearer_token_from_request_headers():
+    """Extract token from ctx.request_context.request.headers."""
+    ctx = _make_ctx("Bearer abc123")
     assert _extract_bearer_token(ctx) == "abc123"
 
 
-def test_extract_bearer_token_from_meta_extra():
-    """Extract token from ctx.meta.extra dict."""
-    ctx = MagicMock()
-    ctx.headers = None
-    ctx.meta.extra = {"token": "xyz789"}
-    assert _extract_bearer_token(ctx) == "xyz789"
-
-
-def test_extract_bearer_token_from_meta_authorization():
-    """Extract token from ctx.meta.extra authorization field."""
-    ctx = MagicMock()
-    ctx.headers = None
-    ctx.meta.extra = {"authorization": "Bearer tok456"}
-    assert _extract_bearer_token(ctx) == "tok456"
-
-
-def test_extract_bearer_token_none():
-    """Returns None when no token found."""
-    ctx = MagicMock()
-    ctx.headers = {}
-    ctx.meta = None
+def test_extract_bearer_token_none_when_no_auth():
+    """Returns None when no authorization header."""
+    ctx = _make_ctx()
     assert _extract_bearer_token(ctx) is None
 
 
-def test_extract_bearer_token_no_headers_attr():
-    """Returns None gracefully if ctx has no headers attr."""
+def test_extract_bearer_token_no_request_context():
+    """Returns None gracefully if ctx has no request_context."""
     ctx = MagicMock(spec=[])  # no attributes
     assert _extract_bearer_token(ctx) is None
 
 
 def test_extract_bearer_token_non_bearer():
     """Returns None if Authorization is not Bearer."""
+    ctx = _make_ctx("Basic abc123")
+    assert _extract_bearer_token(ctx) is None
+
+
+def test_extract_bearer_token_request_is_none():
+    """Returns None if request_context.request is None."""
     ctx = MagicMock()
-    ctx.headers = {"authorization": "Basic abc123"}
-    ctx.meta = None
+    ctx.request_context.request = None
     assert _extract_bearer_token(ctx) is None
 
 
@@ -225,10 +224,7 @@ def test_extract_bearer_token_non_bearer():
 @pytest.mark.asyncio
 async def test_require_user_no_token():
     """require_user raises ToolError when no token."""
-    ctx = MagicMock()
-    ctx.headers = {}
-    ctx.meta = None
-
+    ctx = _make_ctx()
     with pytest.raises(ToolError, match="Authentication required"):
         await require_user(ctx)
 
@@ -236,10 +232,7 @@ async def test_require_user_no_token():
 @pytest.mark.asyncio
 async def test_require_user_invalid_token():
     """require_user raises ToolError on auth failure."""
-    ctx = MagicMock()
-    ctx.headers = {"authorization": "Bearer invalid.token.here"}
-    ctx.meta = None
-
+    ctx = _make_ctx("Bearer invalid.token.here")
     with patch(
         "ceramicraft_mcp_server.auth.verify_token",
         AsyncMock(side_effect=AuthError("bad token")),
@@ -251,9 +244,7 @@ async def test_require_user_invalid_token():
 @pytest.mark.asyncio
 async def test_require_user_success():
     """require_user returns user on valid token."""
-    ctx = MagicMock()
-    ctx.headers = {"authorization": "Bearer valid.token"}
-    ctx.meta = None
+    ctx = _make_ctx("Bearer valid.token")
     expected_user = AuthenticatedUser(user_id="42", roles=["customer"])
 
     with patch(
@@ -267,9 +258,7 @@ async def test_require_user_success():
 @pytest.mark.asyncio
 async def test_require_admin_non_admin():
     """require_admin raises ToolError for non-admin user."""
-    ctx = MagicMock()
-    ctx.headers = {"authorization": "Bearer valid.token"}
-    ctx.meta = None
+    ctx = _make_ctx("Bearer valid.token")
     non_admin = AuthenticatedUser(user_id="42", roles=["customer"])
 
     with patch(
@@ -283,9 +272,7 @@ async def test_require_admin_non_admin():
 @pytest.mark.asyncio
 async def test_require_admin_success():
     """require_admin returns user with admin role."""
-    ctx = MagicMock()
-    ctx.headers = {"authorization": "Bearer valid.token"}
-    ctx.meta = None
+    ctx = _make_ctx("Bearer valid.token")
     admin = AuthenticatedUser(user_id="1", roles=["merchant_admin"])
 
     with patch(
@@ -299,9 +286,7 @@ async def test_require_admin_success():
 @pytest.mark.asyncio
 async def test_require_role_product_write_with_editor():
     """product_editor can access ROLE_PRODUCT_WRITE tools."""
-    ctx = MagicMock()
-    ctx.headers = {"authorization": "Bearer valid.token"}
-    ctx.meta = None
+    ctx = _make_ctx("Bearer valid.token")
     editor = AuthenticatedUser(user_id="1", roles=["product_editor"])
 
     with patch(
@@ -315,9 +300,7 @@ async def test_require_role_product_write_with_editor():
 @pytest.mark.asyncio
 async def test_require_role_product_write_denied_for_auditor():
     """product_auditor cannot access ROLE_PRODUCT_WRITE tools."""
-    ctx = MagicMock()
-    ctx.headers = {"authorization": "Bearer valid.token"}
-    ctx.meta = None
+    ctx = _make_ctx("Bearer valid.token")
     auditor = AuthenticatedUser(user_id="1", roles=["product_auditor"])
 
     with patch(
@@ -331,9 +314,7 @@ async def test_require_role_product_write_denied_for_auditor():
 @pytest.mark.asyncio
 async def test_require_role_product_audit_with_auditor():
     """product_auditor can access ROLE_PRODUCT_AUDIT tools."""
-    ctx = MagicMock()
-    ctx.headers = {"authorization": "Bearer valid.token"}
-    ctx.meta = None
+    ctx = _make_ctx("Bearer valid.token")
     auditor = AuthenticatedUser(user_id="1", roles=["product_auditor"])
 
     with patch(
@@ -348,9 +329,7 @@ async def test_require_role_product_audit_with_auditor():
 async def test_require_role_product_read_all_roles():
     """All three admin roles can access ROLE_PRODUCT_READ tools."""
     for role in ["merchant_admin", "product_editor", "product_auditor"]:
-        ctx = MagicMock()
-        ctx.headers = {"authorization": "Bearer valid.token"}
-        ctx.meta = None
+        ctx = _make_ctx("Bearer valid.token")
         user_obj = AuthenticatedUser(user_id="1", roles=[role])
 
         with patch(
@@ -364,9 +343,7 @@ async def test_require_role_product_read_all_roles():
 @pytest.mark.asyncio
 async def test_require_role_merchant_admin_denied_for_editor():
     """product_editor cannot access ROLE_MERCHANT_ADMIN tools."""
-    ctx = MagicMock()
-    ctx.headers = {"authorization": "Bearer valid.token"}
-    ctx.meta = None
+    ctx = _make_ctx("Bearer valid.token")
     editor = AuthenticatedUser(user_id="1", roles=["product_editor"])
 
     with patch(
@@ -380,9 +357,7 @@ async def test_require_role_merchant_admin_denied_for_editor():
 @pytest.mark.asyncio
 async def test_require_role_customer_denied():
     """Customer role has no access to any admin tools."""
-    ctx = MagicMock()
-    ctx.headers = {"authorization": "Bearer valid.token"}
-    ctx.meta = None
+    ctx = _make_ctx("Bearer valid.token")
     customer = AuthenticatedUser(user_id="1", roles=["customer"])
 
     with patch(

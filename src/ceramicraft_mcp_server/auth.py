@@ -96,28 +96,17 @@ def _get_jwks_client() -> JWKSClient:
 def _extract_bearer_token(ctx: Context) -> str | None:
     """Extract Bearer token from MCP request context.
 
-    MCP Streamable HTTP transport passes the Authorization header
-    through the request context.
+    The Streamable HTTP transport stores the original Starlette Request
+    in ``ctx.request_context.request``, which carries HTTP headers.
     """
-    # FastMCP stores request headers in the context session
-    # Try to get from transport headers
-    headers = getattr(ctx, "headers", None)
-    if headers:
-        auth_header = headers.get("authorization", "")
-        if auth_header.startswith("Bearer "):
-            return auth_header[7:]
-
-    # Fallback: check meta/extra from context
-    meta = getattr(ctx, "meta", None)
-    if meta:
-        extra = getattr(meta, "extra", None)
-        if isinstance(extra, dict):
-            token = extra.get("token") or extra.get("authorization", "")
-            if isinstance(token, str):
-                if token.startswith("Bearer "):
-                    return token[7:]
-                if token:
-                    return token
+    try:
+        request = ctx.request_context.request
+        if request is not None:
+            auth_header = request.headers.get("authorization", "")
+            if auth_header.startswith("Bearer "):
+                return auth_header[7:]
+    except (AttributeError, ValueError):
+        pass
 
     return None
 

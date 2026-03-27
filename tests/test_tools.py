@@ -44,14 +44,13 @@ def _mock_http(return_value=None):
 
 def _user_ctx():
     ctx = MagicMock()
-    ctx.headers = {"authorization": "Bearer user-token"}
-    ctx.meta = None
+    ctx.request_context.request.headers = {"authorization": "Bearer user-token"}
     return ctx
 
 
 def _admin_ctx():
     ctx = MagicMock()
-    ctx.headers = {"authorization": "Bearer admin-token"}
+    ctx.request_context.request.headers = {"authorization": "Bearer admin-token"}
     ctx.meta = None
     return ctx
 
