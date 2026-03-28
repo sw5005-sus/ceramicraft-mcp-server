@@ -16,6 +16,7 @@ from ceramicraft_mcp_server.auth import (
     AuthenticatedUser,
     JWKSClient,
     _extract_bearer_token,
+    _extract_local_user_id,
     _extract_roles,
     _find_key,
     require_admin,
@@ -135,6 +136,60 @@ def test_extract_roles_non_dict():
     """Returns empty list if roles claim is not a dict."""
     assert _extract_roles({"urn:zitadel:iam:org:project:roles": "not-a-dict"}) == []
     assert _extract_roles({"urn:zitadel:iam:org:project:roles": ["a", "b"]}) == []
+
+
+# ─── _extract_local_user_id ────────────────────────────────
+
+
+def test_extract_local_user_id_standard_base64():
+    """Extracts local_userid from base64-encoded Zitadel metadata."""
+    import base64
+
+    encoded = base64.b64encode(b"42").decode()
+    payload = {"urn:zitadel:iam:user:metadata": {"local_userid": encoded}}
+    assert _extract_local_user_id(payload) == "42"
+
+
+def test_extract_local_user_id_raw_base64():
+    """Handles raw (unpadded) base64 encoding from Zitadel."""
+    import base64
+
+    encoded = base64.b64encode(b"12345").decode().rstrip("=")
+    payload = {"urn:zitadel:iam:user:metadata": {"local_userid": encoded}}
+    assert _extract_local_user_id(payload) == "12345"
+
+
+def test_extract_local_user_id_missing_metadata():
+    """Returns empty string when metadata claim is absent."""
+    assert _extract_local_user_id({}) == ""
+    assert _extract_local_user_id({"other": "claim"}) == ""
+
+
+def test_extract_local_user_id_missing_key():
+    """Returns empty string when local_userid key is absent."""
+    payload = {"urn:zitadel:iam:user:metadata": {"other_key": "value"}}
+    assert _extract_local_user_id(payload) == ""
+
+
+def test_extract_local_user_id_non_numeric():
+    """Returns empty string if decoded value is not numeric."""
+    import base64
+
+    encoded = base64.b64encode(b"not-a-number").decode()
+    payload = {"urn:zitadel:iam:user:metadata": {"local_userid": encoded}}
+    assert _extract_local_user_id(payload) == ""
+
+
+def test_extract_local_user_id_empty_value():
+    """Returns empty string when local_userid is empty."""
+    payload = {"urn:zitadel:iam:user:metadata": {"local_userid": ""}}
+    assert _extract_local_user_id(payload) == ""
+
+
+def test_extract_local_user_id_non_dict_metadata():
+    """Returns empty string when metadata is not a dict."""
+    payload = {"urn:zitadel:iam:user:metadata": "not-a-dict"}
+    assert _extract_local_user_id(payload) == ""
 
 
 # ─── JWKSClient ────────────────────────────────────────────
@@ -469,7 +524,11 @@ async def test_verify_token_key_not_found():
 
 @pytest.mark.asyncio
 async def test_verify_token_success():
-    """verify_token returns AuthenticatedUser on valid token."""
+    """verify_token returns AuthenticatedUser with local_userid from metadata."""
+    import base64
+
+    local_userid_b64 = base64.b64encode(b"42").decode()
+
     with (
         patch(
             "ceramicraft_mcp_server.auth.jwt.get_unverified_header",
@@ -489,21 +548,56 @@ async def test_verify_token_success():
             patch(
                 "ceramicraft_mcp_server.auth.jwt.decode",
                 return_value={
-                    "sub": "42",
+                    "sub": "362012021769682980",
                     "email": "test@example.com",
                     "name": "Test User",
                     "urn:zitadel:iam:org:project:roles": {
                         "merchant_admin": {"orgId": "1"},
+                    },
+                    "urn:zitadel:iam:user:metadata": {
+                        "local_userid": local_userid_b64,
                     },
                 },
             ),
         ):
             user = await verify_token("valid.token")
             assert user.user_id == "42"
+            assert user.user_id_int == 42
             assert user.email == "test@example.com"
             assert user.name == "Test User"
             assert "merchant_admin" in user.roles
             assert user.is_admin
+
+
+@pytest.mark.asyncio
+async def test_verify_token_falls_back_to_sub():
+    """verify_token uses sub when local_userid metadata is absent."""
+    with (
+        patch(
+            "ceramicraft_mcp_server.auth.jwt.get_unverified_header",
+            return_value={"kid": "k1", "alg": "RS256"},
+        ),
+        patch("ceramicraft_mcp_server.auth._get_jwks_client") as mock_get_jwks,
+    ):
+        mock_jwks = AsyncMock()
+        mock_jwks.get_signing_keys = AsyncMock(return_value={"keys": [{"kid": "k1"}]})
+        mock_get_jwks.return_value = mock_jwks
+
+        with (
+            patch(
+                "ceramicraft_mcp_server.auth.jwt.algorithms.RSAAlgorithm.from_jwk",
+                return_value=MagicMock(),
+            ),
+            patch(
+                "ceramicraft_mcp_server.auth.jwt.decode",
+                return_value={
+                    "sub": "999",
+                    "email": "sa@example.com",
+                },
+            ),
+        ):
+            user = await verify_token("valid.token")
+            assert user.user_id == "999"
 
 
 @pytest.mark.asyncio

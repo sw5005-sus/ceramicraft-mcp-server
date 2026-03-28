@@ -4,6 +4,7 @@ Verifies Zitadel-issued JWT tokens using JWKS public keys.
 Provides helpers for MCP tool auth enforcement.
 """
 
+import base64
 import logging
 from dataclasses import dataclass, field
 from typing import Any
@@ -205,7 +206,7 @@ async def verify_token(token: str) -> AuthenticatedUser:
         )
 
         # Extract user info from Zitadel claims
-        user_id = payload.get("sub", "")
+        user_id = _extract_local_user_id(payload) or payload.get("sub", "")
         roles = _extract_roles(payload)
         email = payload.get("email", "")
         name = payload.get("name", payload.get("preferred_username", ""))
@@ -247,3 +248,38 @@ def _extract_roles(payload: dict[str, Any]) -> list[str]:
     if isinstance(roles_claim, dict):
         return [str(k) for k in roles_claim.keys()]
     return []
+
+
+def _extract_local_user_id(payload: dict[str, Any]) -> str:
+    """Extract the local (internal) user ID from Zitadel user metadata.
+
+    When a user registers via OAuth, user-ms writes their internal auto-increment
+    user ID into Zitadel user metadata under the ``local_userid`` key (base64-encoded).
+    The metadata is included in the JWT under the
+    ``urn:zitadel:iam:user:metadata`` claim when the token scope requests it.
+
+    This internal ID is required because Go backend services use small integer
+    user IDs (MySQL INT), not the large Zitadel ``sub`` values.
+
+    Returns:
+        The decoded local user ID string, or empty string if not found.
+    """
+    metadata = payload.get("urn:zitadel:iam:user:metadata", {})
+    if not isinstance(metadata, dict):
+        return ""
+
+    raw_id = metadata.get("local_userid", "")
+    if not raw_id:
+        return ""
+
+    try:
+        # Zitadel stores metadata values as base64-encoded strings.
+        # Pad with '=' as needed since Zitadel may use raw (unpadded) encoding.
+        padded = raw_id + "=" * (-len(raw_id) % 4)
+        decoded = base64.b64decode(padded).decode("utf-8")
+        # Validate it's actually a numeric ID
+        int(decoded)
+        return decoded
+    except (ValueError, UnicodeDecodeError):
+        logger.warning("Failed to decode local_userid from token metadata: %r", raw_id)
+        return ""
