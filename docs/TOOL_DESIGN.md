@@ -47,7 +47,9 @@ http://order-ms-svc:8080/order-ms/v1/customer/orders
 **Authentication injection**: Go services use `AuthMiddleware` which reads user
 identity from `X-Original-User-ID` header (set by Traefik forwardAuth in
 production). When MCP Server calls on behalf of a user, it verifies the agent's
-JWT, extracts `sub` (user ID), and injects this header into internal HTTP calls.
+JWT, extracts the internal user ID from Zitadel user metadata
+(`urn:zitadel:iam:user:metadata.local_userid`, base64-encoded), and injects
+this header into internal HTTP calls. Falls back to `sub` if metadata is absent.
 
 ## 3. Auth Model
 
@@ -59,9 +61,10 @@ JWT, extracts `sub` (user ID), and injects this header into internal HTTP calls.
 │  Anyone can call. Used by Search Agent for browsing.     │
 ├─────────────────────────────────────────────────────────┤
 │  Level 1: USER — Valid Zitadel JWT required              │
-│  Token must have valid `sub`. MCP Server extracts        │
-│  user_id and passes it to backend via                    │
-│  X-Original-User-ID header.                              │
+│  Token must contain `local_userid` in Zitadel user       │
+│  metadata. MCP Server extracts internal user_id and      │
+│  passes it to backend via X-Original-User-ID header.     │
+│  Falls back to `sub` if metadata is absent.              │
 ├─────────────────────────────────────────────────────────┤
 │  Level 2: ADMIN — Valid JWT + per-tool role check         │
 │  Roles: merchant_admin, product_auditor, product_editor  │
@@ -121,7 +124,9 @@ MCP Clients (agents) pass the Zitadel JWT in the MCP request. Two scenarios:
 
 1. **Agent acting on behalf of user**: Agent receives user's JWT from the
    frontend and includes it in MCP calls. MCP Server verifies and extracts
-   `sub` as user_id.
+   the internal user ID from `urn:zitadel:iam:user:metadata.local_userid`
+   (base64-encoded). This is the MySQL auto-increment ID written by user-ms
+   during OAuth registration. Falls back to `sub` if metadata is absent.
 
 2. **Agent acting autonomously**: Agent uses its own Service Account
    credentials (client_credentials grant) to obtain a JWT from Zitadel.

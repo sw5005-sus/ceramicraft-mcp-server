@@ -94,7 +94,7 @@ AI Agents ──MCP (Streamable HTTP)──▶ MCP Server ──HTTP──▶ Ba
 
 ## Auth
 
-JWT tokens are verified against [Zitadel](https://zitadel.com) JWKS. User identity is extracted from the `sub` claim and passed to backends via `X-Original-User-ID` header.
+JWT tokens are verified against [Zitadel](https://zitadel.com) JWKS. User identity is extracted from the `urn:zitadel:iam:user:metadata.local_userid` claim (base64-encoded internal user ID written by user-ms during OAuth registration) and passed to backends via `X-Original-User-ID` header. Falls back to the `sub` claim when metadata is not present.
 
 ## Development
 
