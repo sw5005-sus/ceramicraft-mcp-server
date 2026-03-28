@@ -51,7 +51,7 @@ def register_user_tools(mcp: FastMCP) -> None:
         """
         user = await require_user(ctx)
         client = get_http_client()
-        body: dict[str, Any] = {}
+        body: dict[str, Any] = {"id": user.user_id_int}
         if name is not None:
             body["name"] = name
         if email is not None:

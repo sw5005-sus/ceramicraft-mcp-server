@@ -360,10 +360,9 @@ COMMENT_TOOLS = _register(
 @pytest.mark.asyncio
 async def test_list_product_reviews():
     http = _mock_http({"reviews": []})
-    with patch(
-        "ceramicraft_mcp_server.tools.comment.get_http_client", return_value=http
-    ):
-        result = await COMMENT_TOOLS["list_product_reviews"](1)
+    p1, p2 = _patch_user("comment", http)
+    with p1, p2:
+        result = await COMMENT_TOOLS["list_product_reviews"](_user_ctx(), 1)
         assert "reviews" in result
 
 
@@ -470,6 +469,7 @@ async def test_update_my_profile():
             _user_ctx(), name="New Name", email="new@test.com"
         )
         body = http.call.call_args.kwargs["json_body"]
+        assert body["id"] == 42
         assert body["name"] == "New Name"
         assert body["email"] == "new@test.com"
 

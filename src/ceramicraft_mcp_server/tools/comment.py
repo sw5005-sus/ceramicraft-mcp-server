@@ -1,7 +1,6 @@
 """Comment/Review-related MCP tools.
 
-PUBLIC tools: list_product_reviews
-USER tools: get_user_reviews, create_review, like_review
+USER tools: list_product_reviews, get_user_reviews, create_review, like_review
 ADMIN tools: list_reviews_admin, delete_review, pin_review, reply_to_review
 """
 
@@ -20,26 +19,30 @@ PREFIX = "/comment-ms/v1"
 def register_comment_tools(mcp: FastMCP) -> None:
     """Register comment tools on the MCP server."""
 
-    # ─── PUBLIC ─────────────────────────────────────────────
+    # ─── USER ──────────────────────────────────────────────
 
     @mcp.tool()
-    async def list_product_reviews(product_id: int) -> dict[str, Any]:
-        """List reviews for a product. No authentication required.
+    async def list_product_reviews(ctx: Context, product_id: int) -> dict[str, Any]:
+        """List reviews for a product. Requires authentication.
+
+        Note: comment-ms requires auth even for product review listing
+        (the endpoint is behind AuthMiddleware).
 
         Args:
+            ctx: MCP context (injected automatically).
             product_id: The product ID to get reviews for.
 
         Returns:
             A dict with reviews for the product.
         """
+        user = await require_user(ctx)
         client = get_http_client()
         return await client.call(
             get_settings().COMMENT_MS_HTTP,
             "GET",
             f"{PREFIX}/customer/reviews/product/{product_id}",
+            user_id=user.user_id_int,
         )
-
-    # ─── USER ──────────────────────────────────────────────
 
     @mcp.tool()
     async def get_user_reviews(ctx: Context) -> dict[str, Any]:

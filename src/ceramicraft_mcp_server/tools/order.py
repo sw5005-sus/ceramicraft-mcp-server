@@ -27,7 +27,7 @@ def register_order_tools(mcp: FastMCP) -> None:
         receiver_last_name: str,
         receiver_phone: str,
         receiver_address: str,
-        receiver_country: str = "",
+        receiver_country: str,
         receiver_zip_code: int = 0,
         remark: str = "",
     ) -> dict[str, Any]:
@@ -41,7 +41,7 @@ def register_order_tools(mcp: FastMCP) -> None:
             receiver_last_name: Receiver's last name.
             receiver_phone: Receiver's phone number.
             receiver_address: Receiver's address.
-            receiver_country: Receiver's country.
+            receiver_country: Receiver's country (required by backend).
             receiver_zip_code: Receiver's postal code.
             remark: Order remark/notes.
 
@@ -55,9 +55,8 @@ def register_order_tools(mcp: FastMCP) -> None:
             "receiver_last_name": receiver_last_name,
             "receiver_phone": receiver_phone,
             "receiver_address": receiver_address,
+            "receiver_country": receiver_country,
         }
-        if receiver_country:
-            body["receiver_country"] = receiver_country
         if receiver_zip_code:
             body["receiver_zip_code"] = receiver_zip_code
         if remark:

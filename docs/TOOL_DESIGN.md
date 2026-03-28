@@ -183,7 +183,7 @@ Used by: **Comment Review Agent**, **Customer Support Agent**
 
 | Tool | Auth | Backend Call | Agent Use Case |
 |------|------|-------------|----------------|
-| `list_product_reviews` | PUBLIC | `GET /comment-ms/v1/customer/reviews/product/{id}` | Support Agent: show reviews; Comment Review Agent: fetch for analysis |
+| `list_product_reviews` | USER | `GET /comment-ms/v1/customer/reviews/product/{id}` | Support Agent: show reviews; Comment Review Agent: fetch for analysis |
 | `get_user_reviews` | USER | `GET /comment-ms/v1/customer/reviews/user` | Support Agent: show user's own reviews |
 | `create_review` | USER | `POST /comment-ms/v1/customer/reviews` | Support Agent: help user post review |
 | `like_review` | USER | `POST /comment-ms/v1/customer/reviews/{id}/like` | Support Agent: like on behalf of user |
