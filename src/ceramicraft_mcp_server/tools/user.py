@@ -93,10 +93,10 @@ def register_user_tools(mcp: FastMCP) -> None:
         last_name: str,
         contact_phone: str,
         detail: str,
+        country: str,
+        zip_code: str,
         city: str = "",
         province: str = "",
-        country: str = "",
-        zip_code: str = "",
         is_default: bool = False,
     ) -> dict[str, Any]:
         """Create a new shipping address.

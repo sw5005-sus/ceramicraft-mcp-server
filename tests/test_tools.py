@@ -488,7 +488,14 @@ async def test_create_address():
     p1, p2 = _patch_user("user", http)
     with p1, p2:
         await USER_TOOLS["create_address"](
-            _user_ctx(), "John", "Doe", "+65123", "123 Street", "Singapore", "", "SG"
+            _user_ctx(),
+            first_name="John",
+            last_name="Doe",
+            contact_phone="+65123",
+            detail="123 Street",
+            country="SG",
+            zip_code="123456",
+            city="Singapore",
         )
         body = http.call.call_args.kwargs["json_body"]
         assert body["first_name"] == "John"
@@ -496,6 +503,8 @@ async def test_create_address():
         assert body["contact_phone"] == "+65123"
         assert body["detail"] == "123 Street"
         assert body["country"] == "SG"
+        assert body["zip_code"] == "123456"
+        assert body["city"] == "Singapore"
 
 
 @pytest.mark.asyncio
