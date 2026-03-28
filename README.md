@@ -49,7 +49,7 @@ AI Agents ──MCP (Streamable HTTP)──▶ MCP Server ──HTTP──▶ Ba
 
 | Tool | Auth | Backend | Description |
 |------|------|---------|-------------|
-| `list_product_reviews` | PUBLIC | comment-ms | Get reviews for a product |
+| `list_product_reviews` | USER | comment-ms | Get reviews for a product |
 | `get_user_reviews` | USER | comment-ms | Get current user's reviews |
 | `create_review` | USER | comment-ms | Post a product review |
 | `like_review` | USER | comment-ms | Like a review |
@@ -88,8 +88,8 @@ AI Agents ──MCP (Streamable HTTP)──▶ MCP Server ──HTTP──▶ Ba
 
 | Auth Level | Count | Description |
 |------------|-------|-------------|
-| PUBLIC | 3 | No authentication needed |
-| USER | 21 | Requires valid Zitadel JWT |
+| PUBLIC | 2 | No authentication needed |
+| USER | 22 | Requires valid Zitadel JWT |
 | ADMIN | 17 | Per-tool role check (see table above for specific roles) |
 
 ## Auth
