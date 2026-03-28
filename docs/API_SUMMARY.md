@@ -116,29 +116,15 @@ Generated from swagger.json / proto files in each microservice repo.
 
 ## notification-ms (Python, PostgreSQL, gRPC port 50051)
 
-### HTTP
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | /notification-ms/v1/ping | Health check |
 | POST | /notification-ms/v1/push-token | Register FCM push token |
 
-### gRPC (notification.proto)
-| RPC | Request | Response | Description |
-|-----|---------|----------|-------------|
-| SendUserPush | SendUserPushRequest | SendUserPushResponse | Send push notification to user |
-
 ---
 
 ## log-ms (Python, PostgreSQL, gRPC port 50051)
 
-### HTTP
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | /log-ms/v1/ping | Health check |
-
-### gRPC (audit_log.proto)
-| RPC | Request | Response | Description |
-|-----|---------|----------|-------------|
-| RecordAuditLog | RecordAuditLogRequest | RecordAuditLogResponse | Record an audit log entry |
-| QueryAuditLogs | QueryAuditLogsRequest | QueryAuditLogsResponse | Query audit logs with filters |
-| VerifyAuditLogChain | VerifyAuditLogChainRequest | VerifyAuditLogChainResponse | Verify hash chain integrity |
