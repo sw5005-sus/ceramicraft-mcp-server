@@ -72,34 +72,34 @@ def register_cart_tools(mcp: FastMCP) -> None:
     async def update_cart_item(
         ctx: Context,
         item_id: int,
-        quantity: int | None = None,
-        selected: bool | None = None,
+        product_id: int,
+        quantity: int = 1,
+        selected: bool = True,
     ) -> dict[str, Any]:
         """Update a cart item (quantity or selection).
 
         Args:
             ctx: MCP context (injected automatically).
             item_id: Cart item ID to update.
+            product_id: Product ID (required by backend).
             quantity: New quantity (minimum 1).
-            selected: New selection state.
+            selected: Whether the item is selected for checkout.
 
         Returns:
             Updated cart item.
         """
         user = await require_user(ctx)
         client = get_http_client()
-        body: dict[str, Any] = {}
-        if quantity is not None:
-            body["quantity"] = quantity
-        if selected is not None:
-            body["selected"] = selected
-
         return await client.call(
             get_settings().PRODUCT_MS_HTTP,
             "PUT",
             f"{PREFIX}/customer/cart/items/{item_id}",
             user_id=user.user_id_int,
-            json_body=body,
+            json_body={
+                "product_id": product_id,
+                "quantity": quantity,
+                "selected": selected,
+            },
         )
 
     @mcp.tool()

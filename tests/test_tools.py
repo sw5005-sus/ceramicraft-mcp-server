@@ -237,9 +237,11 @@ async def test_update_cart_item():
     http = _mock_http()
     p1, p2 = _patch_user("cart", http)
     with p1, p2:
-        await CART_TOOLS["update_cart_item"](_user_ctx(), 1, quantity=3)
+        await CART_TOOLS["update_cart_item"](_user_ctx(), 1, product_id=10, quantity=3)
         body = http.call.call_args.kwargs["json_body"]
+        assert body["product_id"] == 10
         assert body["quantity"] == 3
+        assert body["selected"] is True
 
 
 @pytest.mark.asyncio
