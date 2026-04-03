@@ -595,7 +595,9 @@ async def test_register_push_token():
         await NOTIFICATION_TOOLS["register_push_token"](
             _user_ctx(), "device-1", "fcm-abc"
         )
-        body = http.call.call_args.kwargs["json_body"]
-        assert body["user_id"] == 42
+        call_kwargs = http.call.call_args.kwargs
+        assert call_kwargs["user_id"] == 42
+        body = call_kwargs["json_body"]
         assert body["device_id"] == "device-1"
         assert body["fcm_token"] == "fcm-abc"
+        assert "user_id" not in body

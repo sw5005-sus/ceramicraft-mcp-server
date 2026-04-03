@@ -9,7 +9,7 @@ Records which commit each spec was extracted from. Update this when re-pulling s
 | user-ms | user-ms.json | ceramicraft-user-mservice | `7bc7554` | 2026-03-21 |
 | comment-ms | comment-ms.json | ceramicraft-comment-mservice | `7b3f8df` | 2026-03-21 |
 | payment-ms | payment-ms.json | ceramicraft-payment-mservice | `32ea09c` | 2026-03-19 |
-| notification-ms | notification-ms.json | ceramicraft-notification-mservice | `ae2ba61` | 2026-03-24 |
+| notification-ms | notification-ms.json | ceramicraft-notification-mservice | `6712e0f` | 2026-04-03 |
 
 All specs are full Swagger/OpenAPI JSON files (2-space indent).
 Product spec includes cart endpoints.

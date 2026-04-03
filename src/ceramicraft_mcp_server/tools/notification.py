@@ -39,8 +39,8 @@ def register_notification_tools(mcp: FastMCP) -> None:
             get_settings().NOTIFICATION_MS_HTTP,
             "POST",
             f"{PREFIX}/push-token",
+            user_id=user.user_id_int,
             json_body={
-                "user_id": user.user_id_int,
                 "device_id": device_id,
                 "fcm_token": fcm_token,
             },
