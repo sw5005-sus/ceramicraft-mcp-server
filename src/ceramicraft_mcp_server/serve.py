@@ -1,5 +1,6 @@
 """Entrypoint for the CeramiCraft MCP Server."""
 
+import logging
 import sys
 
 import dttb
@@ -13,6 +14,11 @@ dttb.apply()
 
 def main() -> None:
     """Start the MCP server with Streamable HTTP transport."""
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+        stream=sys.stdout,
+    )
     settings = get_settings()
     mcp = create_mcp_server(
         host=settings.MCP_SERVER_HOST,
