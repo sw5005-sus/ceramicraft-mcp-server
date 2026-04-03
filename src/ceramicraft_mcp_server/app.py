@@ -23,8 +23,8 @@ def create_mcp_server(host: str = "0.0.0.0", port: int = 8080) -> FastMCP:
     )
 
     # Health check endpoint for K8s liveness/readiness probes
-    @mcp.custom_route("/health", methods=["GET"])
-    async def health_check(request: Request) -> JSONResponse:
+    @mcp.custom_route("/mcp-server/v1/ping", methods=["GET"])
+    async def ping(request: Request) -> JSONResponse:
         return JSONResponse({"status": "ok"})
 
     # Register tool groups
