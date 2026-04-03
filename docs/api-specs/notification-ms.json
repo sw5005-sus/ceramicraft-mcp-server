@@ -1,175 +1,175 @@
 {
-    "openapi": "3.1.0",
-    "info": {
-        "title": "FastAPI",
-        "version": "0.1.0"
-    },
-    "paths": {
-        "/notification-ms/v1/ping": {
-            "get": {
-                "summary": "Ping",
-                "operationId": "ping_notification_ms_v1_ping_get",
-                "responses": {
-                    "200": {
-                        "description": "Successful Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "additionalProperties": {
-                                        "type": "string"
-                                    },
-                                    "type": "object",
-                                    "title": "Response Ping Notification Ms V1 Ping Get"
-                                }
-                            }
-                        }
-                    }
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FastAPI",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/notification-ms/v1/ping": {
+      "get": {
+        "summary": "Ping",
+        "operationId": "ping_notification_ms_v1_ping_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Ping Notification Ms V1 Ping Get"
                 }
+              }
             }
+          }
+        }
+      }
+    },
+    "/notification-ms/v1/push-token": {
+      "post": {
+        "summary": "Register Push Token",
+        "operationId": "register_push_token_notification_ms_v1_push_token_post",
+        "parameters": [
+          {
+            "name": "X-Original-User-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Original-User-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterPushTokenRequest"
+              }
+            }
+          }
         },
-        "/notification-ms/v1/push-token": {
-            "post": {
-                "summary": "Register Push Token",
-                "operationId": "register_push_token_notification_ms_v1_push_token_post",
-                "parameters": [
-                    {
-                        "name": "X-Original-User-ID",
-                        "in": "header",
-                        "required": false,
-                        "schema": {
-                            "anyOf": [
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "null"
-                                }
-                            ],
-                            "title": "X-Original-User-Id"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/RegisterPushTokenRequest"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Successful Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/RegisterPushTokenResponse"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/HTTPValidationError"
-                                }
-                            }
-                        }
-                    }
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegisterPushTokenResponse"
                 }
+              }
             }
-        }
-    },
-    "components": {
-        "schemas": {
-            "HTTPValidationError": {
-                "properties": {
-                    "detail": {
-                        "items": {
-                            "$ref": "#/components/schemas/ValidationError"
-                        },
-                        "type": "array",
-                        "title": "Detail"
-                    }
-                },
-                "type": "object",
-                "title": "HTTPValidationError"
-            },
-            "RegisterPushTokenRequest": {
-                "properties": {
-                    "device_id": {
-                        "type": "string",
-                        "title": "Device Id"
-                    },
-                    "fcm_token": {
-                        "type": "string",
-                        "title": "Fcm Token"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "device_id",
-                    "fcm_token"
-                ],
-                "title": "RegisterPushTokenRequest"
-            },
-            "RegisterPushTokenResponse": {
-                "properties": {
-                    "aes_key": {
-                        "type": "string",
-                        "title": "Aes Key"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "aes_key"
-                ],
-                "title": "RegisterPushTokenResponse"
-            },
-            "ValidationError": {
-                "properties": {
-                    "loc": {
-                        "items": {
-                            "anyOf": [
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "integer"
-                                }
-                            ]
-                        },
-                        "type": "array",
-                        "title": "Location"
-                    },
-                    "msg": {
-                        "type": "string",
-                        "title": "Message"
-                    },
-                    "type": {
-                        "type": "string",
-                        "title": "Error Type"
-                    },
-                    "input": {
-                        "title": "Input"
-                    },
-                    "ctx": {
-                        "type": "object",
-                        "title": "Context"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "loc",
-                    "msg",
-                    "type"
-                ],
-                "title": "ValidationError"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
             }
+          }
         }
+      }
     }
+  },
+  "components": {
+    "schemas": {
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "RegisterPushTokenRequest": {
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "title": "Device Id"
+          },
+          "fcm_token": {
+            "type": "string",
+            "title": "Fcm Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "device_id",
+          "fcm_token"
+        ],
+        "title": "RegisterPushTokenRequest"
+      },
+      "RegisterPushTokenResponse": {
+        "properties": {
+          "aes_key": {
+            "type": "string",
+            "title": "Aes Key"
+          }
+        },
+        "type": "object",
+        "required": [
+          "aes_key"
+        ],
+        "title": "RegisterPushTokenResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
 }
