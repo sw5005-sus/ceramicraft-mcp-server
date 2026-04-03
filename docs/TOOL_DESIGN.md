@@ -222,7 +222,7 @@ Used by: **Customer Support Agent**
 
 | Tool | Auth | Backend Call | Agent Use Case |
 |------|------|-------------|----------------|
-| `register_push_token` | USER | `POST /notification-ms/v1/push-token` body: `{user_id, device_id, fcm_token}` | Support Agent: help register device |
+| `register_push_token` | USER | `POST /notification-ms/v1/push-token` header: `X-Original-User-ID`, body: `{device_id, fcm_token}` | Support Agent: help register device |
 
 ## 5. Tool Count Summary
 
