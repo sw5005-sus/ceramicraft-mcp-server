@@ -38,7 +38,7 @@ def register_notification_tools(mcp: FastMCP) -> None:
         return await client.call(
             get_settings().NOTIFICATION_MS_HTTP,
             "POST",
-            f"{PREFIX}/push-token",
+            f"{PREFIX}/customer/push-token",
             user_id=user.user_id_int,
             json_body={
                 "device_id": device_id,

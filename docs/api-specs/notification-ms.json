@@ -27,7 +27,7 @@
         }
       }
     },
-    "/notification-ms/v1/push-token": {
+    "/notification-ms/v1/customer/push-token": {
       "post": {
         "summary": "Register Push Token",
         "operationId": "register_push_token_notification_ms_v1_push_token_post",

@@ -119,7 +119,7 @@ Generated from swagger.json / proto files in each microservice repo.
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | /notification-ms/v1/ping | Health check |
-| POST | /notification-ms/v1/push-token | Register FCM push token |
+| POST | /notification-ms/v1/customer/push-token | Register FCM push token |
 
 ---
 
