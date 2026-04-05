@@ -41,8 +41,8 @@ def register_order_tools(mcp: FastMCP) -> None:
             receiver_last_name: Receiver's last name.
             receiver_phone: Receiver's phone number.
             receiver_address: Receiver's address.
-            receiver_country: Receiver's country (required by backend).
-            receiver_zip_code: Receiver's postal code (required).
+            receiver_country: Receiver's country.
+            receiver_zip_code: Receiver's postal code.
             remark: Order remark/notes.
 
         Returns:

@@ -81,7 +81,7 @@ def register_cart_tools(mcp: FastMCP) -> None:
         Args:
             ctx: MCP context (injected automatically).
             item_id: Cart item ID to update.
-            product_id: Product ID (required by backend).
+            product_id: Product ID.
             quantity: New quantity (minimum 1).
             selected: Whether the item is selected for checkout.
 
