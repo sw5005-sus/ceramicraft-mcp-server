@@ -28,7 +28,7 @@ def register_order_tools(mcp: FastMCP) -> None:
         receiver_phone: str,
         receiver_address: str,
         receiver_country: str,
-        receiver_zip_code: int = 0,
+        receiver_zip_code: int,
         remark: str = "",
     ) -> dict[str, Any]:
         """Create an order. Requires authentication.
@@ -42,7 +42,7 @@ def register_order_tools(mcp: FastMCP) -> None:
             receiver_phone: Receiver's phone number.
             receiver_address: Receiver's address.
             receiver_country: Receiver's country (required by backend).
-            receiver_zip_code: Receiver's postal code.
+            receiver_zip_code: Receiver's postal code (required).
             remark: Order remark/notes.
 
         Returns:
@@ -56,9 +56,8 @@ def register_order_tools(mcp: FastMCP) -> None:
             "receiver_phone": receiver_phone,
             "receiver_address": receiver_address,
             "receiver_country": receiver_country,
+            "receiver_zip_code": receiver_zip_code,
         }
-        if receiver_zip_code:
-            body["receiver_zip_code"] = receiver_zip_code
         if remark:
             body["remark"] = remark
 
