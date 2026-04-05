@@ -231,11 +231,11 @@ Used by: **Customer Support Agent**
 | Product | 2 | 0 | 7 | 9 |
 | Cart | 0 | 5 | 0 | 5 |
 | Order | 0 | 4 | 4 | 8 |
-| Comment/Review | 1 | 3 | 4 | 8 |
+| Comment/Review | 0 | 4 | 4 | 8 |
 | User | 0 | 6 | 0 | 6 |
 | Payment | 0 | 2 | 2 | 4 |
 | Notification | 0 | 1 | 0 | 1 |
-| **Total** | **3** | **21** | **17** | **41** |
+| **Total** | **2** | **22** | **17** | **41** |
 
 ## 6. Agent → Tool Mapping
 
