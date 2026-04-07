@@ -561,9 +561,7 @@ async def test_update_review_status_with_flags():
 @pytest.mark.asyncio
 async def test_update_review_status_invalid_status():
     with pytest.raises(ToolError, match="Invalid status"):
-        await COMMENT_TOOLS["update_review_status"](
-            _user_ctx(), "r1", "invalid_status"
-        )
+        await COMMENT_TOOLS["update_review_status"](_user_ctx(), "r1", "invalid_status")
 
 
 @pytest.mark.asyncio
