@@ -187,10 +187,12 @@ Used by: **Comment Review Agent**, **Customer Support Agent**
 | `get_user_reviews` | USER | `GET /comment-ms/v1/customer/reviews/user` | Support Agent: show user's own reviews |
 | `create_review` | USER | `POST /comment-ms/v1/customer/reviews` | Support Agent: help user post review |
 | `like_review` | USER | `POST /comment-ms/v1/customer/reviews/{id}/like` | Support Agent: like on behalf of user |
-| `list_reviews_admin` | ADMIN (`merchant_admin`) | `POST /comment-ms/v1/merchant/reviews/list` | Comment Review Agent: list reviews for moderation |
-| `delete_review` | ADMIN (`merchant_admin`) | `DELETE /comment-ms/v1/merchant/reviews/{id}` | Comment Review Agent: remove violating content |
-| `pin_review` | ADMIN (`merchant_admin`) | `PATCH /comment-ms/v1/merchant/reviews/{id}` | Comment Review Agent: pin high-quality reviews |
-| `reply_to_review` | ADMIN (`merchant_admin`) | `POST /comment-ms/v1/merchant/reviews/{id}/replies` | Comment Review Agent: auto-draft merchant reply |
+| `list_reviews_admin` | ADMIN (`merchant_admin`) | `POST /comment-ms/v1/merchant/reviews/list` | Merchant: list reviews filtered by product_id and stars (dashboard view) |
+| `delete_review` | ADMIN (`merchant_admin`) | `DELETE /comment-ms/v1/merchant/reviews/{id}` | Merchant: remove a review |
+| `pin_review` | ADMIN (`merchant_admin`) | `PATCH /comment-ms/v1/merchant/reviews/{id}` | Merchant: pin high-quality reviews |
+| `reply_to_review` | ADMIN (`merchant_admin`) | `POST /comment-ms/v1/merchant/reviews/{id}/replies` | Merchant: auto-draft or post reply |
+| `list_reviews_by_status` | INTERNAL M2M (no auth) | `POST /comment-ms/v1/merchant/reviews/status/list` | Review Moderation Agent: batch-fetch reviews by moderation status (pending, processing, approved, hidden, rejected) with cursor pagination |
+| `update_review_status` | INTERNAL M2M (no auth) | `POST /comment-ms/v1/merchant/reviews/status` | Review Moderation Agent: update review moderation status and flags (is_mismatch, is_harmful, auto_flag); audit logged on server |
 
 ### 4.5 User Tools
 

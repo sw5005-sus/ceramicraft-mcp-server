@@ -95,6 +95,8 @@ Generated from swagger.json / proto files in each microservice repo.
 | DELETE | /comment-ms/v1/merchant/reviews/{review_id} | Delete a review |
 | PATCH | /comment-ms/v1/merchant/reviews/{review_id} | Pin a review |
 | POST | /comment-ms/v1/merchant/reviews/{review_id}/replies | Reply to review |
+| POST | /comment-ms/v1/merchant/reviews/status/list | List reviews by status (M2M) |
+| POST | /comment-ms/v1/merchant/reviews/status | Update review status (M2M) |
 
 ---
 
