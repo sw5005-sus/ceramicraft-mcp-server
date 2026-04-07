@@ -6,7 +6,7 @@ MCP Server for the CeramiCraft multi-agent e-commerce platform. Bridges AI agent
 AI Agents ──MCP (Streamable HTTP)──▶ MCP Server ──HTTP──▶ Backend Microservices
 ```
 
-## Tool Catalog (41 tools)
+## Tool Catalog (43 tools)
 
 ### Product (9 tools)
 
@@ -45,7 +45,7 @@ AI Agents ──MCP (Streamable HTTP)──▶ MCP Server ──HTTP──▶ Ba
 | `get_merchant_order_detail` | ADMIN (`merchant_admin`) | order-ms | Get order detail (merchant view) |
 | `ship_order` | ADMIN (`merchant_admin`) | order-ms | Ship an order with tracking number |
 
-### Review (8 tools)
+### Review (10 tools)
 
 | Tool | Auth | Backend | Description |
 |------|------|---------|-------------|
@@ -57,6 +57,8 @@ AI Agents ──MCP (Streamable HTTP)──▶ MCP Server ──HTTP──▶ Ba
 | `delete_review` | ADMIN (`merchant_admin`) | comment-ms | Delete a review |
 | `pin_review` | ADMIN (`merchant_admin`) | comment-ms | Pin / unpin a review |
 | `reply_to_review` | ADMIN (`merchant_admin`) | comment-ms | Reply to a review as merchant |
+| `list_reviews_by_status` | INTERNAL M2M | comment-ms | List reviews by moderation status with pagination |
+| `update_review_status` | INTERNAL M2M | comment-ms | Update review status and flags (is_mismatch, is_harmful, auto_flag) |
 
 ### User (6 tools)
 
@@ -89,6 +91,7 @@ AI Agents ──MCP (Streamable HTTP)──▶ MCP Server ──HTTP──▶ Ba
 | Auth Level | Count | Description |
 |------------|-------|-------------|
 | PUBLIC | 2 | No authentication needed |
+| INTERNAL M2M | 2 | Internal machine-to-machine calls (no auth) |
 | USER | 22 | Requires valid Zitadel JWT |
 | ADMIN | 17 | Per-tool role check (see table above for specific roles) |
 
