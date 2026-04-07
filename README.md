@@ -53,7 +53,7 @@ AI Agents ──MCP (Streamable HTTP)──▶ MCP Server ──HTTP──▶ Ba
 | `get_user_reviews` | USER | comment-ms | Get current user's reviews |
 | `create_review` | USER | comment-ms | Post a product review |
 | `like_review` | USER | comment-ms | Like a review |
-| `list_reviews_admin` | ADMIN (`merchant_admin`) | comment-ms | List reviews with filters (moderation) |
+| `list_reviews_admin` | ADMIN (`merchant_admin`) | comment-ms | List reviews for a product by filters (product_id, stars) |
 | `delete_review` | ADMIN (`merchant_admin`) | comment-ms | Delete a review |
 | `pin_review` | ADMIN (`merchant_admin`) | comment-ms | Pin / unpin a review |
 | `reply_to_review` | ADMIN (`merchant_admin`) | comment-ms | Reply to a review as merchant |
