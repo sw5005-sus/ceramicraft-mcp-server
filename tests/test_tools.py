@@ -479,9 +479,7 @@ async def test_list_reviews_by_status():
     with patch(
         "ceramicraft_mcp_server.tools.comment.get_http_client", return_value=http
     ):
-        result = await COMMENT_TOOLS["list_reviews_by_status"](
-            _user_ctx(), "pending"
-        )
+        result = await COMMENT_TOOLS["list_reviews_by_status"](_user_ctx(), "pending")
         assert result["data"]["items"][0]["status"] == "pending"
         # Verify the call was made with GET to the correct path
         call_args = http.call.call_args
