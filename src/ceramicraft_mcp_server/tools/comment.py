@@ -235,8 +235,6 @@ def register_comment_tools(mcp: FastMCP) -> None:
     async def list_reviews_by_status(
         ctx: Context,
         status: str,
-        limit: int = 100,
-        cursor: str | None = None,
     ) -> dict[str, Any]:
         """List reviews filtered by status (internal M2M). No authentication required.
 
@@ -245,17 +243,9 @@ def register_comment_tools(mcp: FastMCP) -> None:
         Args:
             ctx: MCP context (injected automatically).
             status: Review status to filter by (required).
-            limit: Maximum number of reviews to return (default: 100, max: 500).
-            cursor: Optional pagination cursor for fetching next batch.
 
         Returns:
-            A dict with:
-            - err_msg: Error message (empty on success).
-            - data: Object containing:
-                - items: Array of review objects with id, content, user_id, product_id,
-                  parent_id, stars, is_anonymous, is_pinned, pic_info, status,
-                  is_mismatch, is_harmful, auto_flag, created_at.
-                - next_cursor: Pagination cursor for next batch (or null).
+            A dict with reviews grouped by status.
         """
         if status not in ["pending", "processing", "approved", "hidden", "rejected"]:
             raise ToolError(
@@ -263,19 +253,11 @@ def register_comment_tools(mcp: FastMCP) -> None:
                 "pending, processing, approved, hidden, rejected"
             )
 
-        if limit < 1 or limit > 500:
-            limit = min(max(limit, 1), 500)
-
         client = get_http_client()
-        body: dict[str, Any] = {"status": status, "limit": limit}
-        if cursor:
-            body["cursor"] = cursor
-
         return await client.call(
             get_settings().COMMENT_MS_HTTP,
-            "POST",
-            f"{PREFIX}/merchant/reviews/status/list",
-            json_body=body,
+            "GET",
+            f"{PREFIX}/reviews/status/{status}",
         )
 
     @mcp.tool()
@@ -286,6 +268,7 @@ def register_comment_tools(mcp: FastMCP) -> None:
         is_mismatch: bool | None = None,
         is_harmful: bool | None = None,
         auto_flag: str | None = None,
+        stars: int | None = None,
     ) -> dict[str, Any]:
         """Update review status (internal M2M). No authentication required.
 
@@ -298,6 +281,7 @@ def register_comment_tools(mcp: FastMCP) -> None:
             is_mismatch: Optional flag indicating if review is mismatch.
             is_harmful: Optional flag indicating if review is harmful.
             auto_flag: Optional auto-flag string (e.g., reason for auto-moderation).
+            stars: Optional star rating (1-5).
 
         Returns:
             A dict with:
@@ -313,6 +297,9 @@ def register_comment_tools(mcp: FastMCP) -> None:
         if not review_id:
             raise ToolError("review_id is required")
 
+        if stars is not None and not 1 <= stars <= 5:
+            raise ToolError("stars must be between 1 and 5")
+
         client = get_http_client()
         body: dict[str, Any] = {"review_id": review_id, "status": status}
 
@@ -322,10 +309,12 @@ def register_comment_tools(mcp: FastMCP) -> None:
             body["is_harmful"] = is_harmful
         if auto_flag is not None:
             body["auto_flag"] = auto_flag
+        if stars is not None:
+            body["stars"] = stars
 
         return await client.call(
             get_settings().COMMENT_MS_HTTP,
             "POST",
-            f"{PREFIX}/merchant/reviews/status",
+            f"{PREFIX}/reviews/status",
             json_body=body,
         )
