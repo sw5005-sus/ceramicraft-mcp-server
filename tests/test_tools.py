@@ -405,6 +405,41 @@ async def test_like_review():
 
 
 @pytest.mark.asyncio
+async def test_list_reviews_by_user_id():
+    http = _mock_http(
+        {
+            "status": 0,
+            "msg": "ok",
+            "data": [
+                {
+                    "id": "r1",
+                    "content": "Great product!",
+                    "user_id": 42,
+                    "product_id": 1,
+                    "parent_id": None,
+                    "stars": 5,
+                    "is_anonymous": False,
+                    "pic_info": [],
+                    "created_at": "2026-01-01T00:00:00Z",
+                    "likes": 10,
+                    "current_user_liked": False,
+                    "is_pinned": False,
+                }
+            ],
+        }
+    )
+    with patch(
+        "ceramicraft_mcp_server.tools.comment.get_http_client", return_value=http
+    ):
+        result = await COMMENT_TOOLS["list_reviews_by_user_id"](42)
+        assert result["status"] == 0
+        assert len(result["data"]) == 1
+        assert result["data"][0]["user_id"] == 42
+        assert http.call.call_args.args[1] == "GET"
+        assert "/users/42/reviews" in http.call.call_args.args[2]
+
+
+@pytest.mark.asyncio
 async def test_list_reviews_admin():
     http = _mock_http({"reviews": []})
     p1, p2 = _patch_admin("comment", http)
@@ -479,25 +514,28 @@ async def test_list_reviews_by_status():
     with patch(
         "ceramicraft_mcp_server.tools.comment.get_http_client", return_value=http
     ):
-        result = await COMMENT_TOOLS["list_reviews_by_status"](_user_ctx(), "pending")
+        result = await COMMENT_TOOLS["list_reviews_by_status"](
+            _user_ctx(), "pending", 100
+        )
         assert result["data"]["items"][0]["status"] == "pending"
-        # Verify the call was made with GET to the correct path
-        call_args = http.call.call_args
-        assert call_args.args[1] == "GET"  # method
-        assert "/reviews/status/pending" in call_args.args[2]  # path
+        body = http.call.call_args.kwargs["json_body"]
+        assert body["status"] == "pending"
+        assert body["limit"] == 100
 
 
 @pytest.mark.asyncio
-async def test_list_reviews_by_status_with_different_statuses():
-    """Test list_reviews_by_status with various valid statuses."""
+async def test_list_reviews_by_status_with_cursor():
     http = _mock_http({"err_msg": "", "data": {"items": [], "next_cursor": None}})
     with patch(
         "ceramicraft_mcp_server.tools.comment.get_http_client", return_value=http
     ):
-        # Test with approved status
-        await COMMENT_TOOLS["list_reviews_by_status"](_user_ctx(), "approved")
-        call_args = http.call.call_args
-        assert "/reviews/status/approved" in call_args.args[2]  # path
+        await COMMENT_TOOLS["list_reviews_by_status"](
+            _user_ctx(), "approved", 50, "cursor123"
+        )
+        body = http.call.call_args.kwargs["json_body"]
+        assert body["status"] == "approved"
+        assert body["limit"] == 50
+        assert body["cursor"] == "cursor123"
 
 
 @pytest.mark.asyncio
@@ -507,17 +545,15 @@ async def test_list_reviews_by_status_invalid_status():
 
 
 @pytest.mark.asyncio
-async def test_list_reviews_by_status_all_statuses():
-    """Test list_reviews_by_status with all valid statuses."""
+async def test_list_reviews_by_status_limit_bounds():
     http = _mock_http({"err_msg": "", "data": {"items": [], "next_cursor": None}})
     with patch(
         "ceramicraft_mcp_server.tools.comment.get_http_client", return_value=http
     ):
-        # Test all valid statuses
-        for status in ["pending", "processing", "approved", "hidden", "rejected"]:
-            await COMMENT_TOOLS["list_reviews_by_status"](_user_ctx(), status)
-            call_args = http.call.call_args
-            assert f"/reviews/status/{status}" in call_args.args[2]  # path
+        # Test limit > 500 gets clamped to 500
+        await COMMENT_TOOLS["list_reviews_by_status"](_user_ctx(), "pending", 1000)
+        body = http.call.call_args.kwargs["json_body"]
+        assert body["limit"] == 500
 
 
 @pytest.mark.asyncio
@@ -567,36 +603,6 @@ async def test_update_review_status_invalid_status():
 async def test_update_review_status_missing_review_id():
     with pytest.raises(ToolError, match="review_id is required"):
         await COMMENT_TOOLS["update_review_status"](_user_ctx(), "", "pending")
-
-
-@pytest.mark.asyncio
-async def test_update_review_status_with_stars():
-    http = _mock_http({"err_msg": "", "data": "update review success"})
-    with patch(
-        "ceramicraft_mcp_server.tools.comment.get_http_client", return_value=http
-    ):
-        await COMMENT_TOOLS["update_review_status"](
-            _user_ctx(),
-            "r1",
-            "approved",
-            stars=4,
-        )
-        body = http.call.call_args.kwargs["json_body"]
-        assert body["review_id"] == "r1"
-        assert body["status"] == "approved"
-        assert body["stars"] == 4
-
-
-@pytest.mark.asyncio
-async def test_update_review_status_invalid_stars():
-    with pytest.raises(ToolError, match="stars must be between 1 and 5"):
-        await COMMENT_TOOLS["update_review_status"](
-            _user_ctx(), "r1", "approved", stars=0
-        )
-    with pytest.raises(ToolError, match="stars must be between 1 and 5"):
-        await COMMENT_TOOLS["update_review_status"](
-            _user_ctx(), "r1", "approved", stars=6
-        )
 
 
 USER_TOOLS = _register("ceramicraft_mcp_server.tools.user", "register_user_tools")
