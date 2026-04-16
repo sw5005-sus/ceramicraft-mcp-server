@@ -193,7 +193,7 @@ Used by: **Comment Review Agent**, **Customer Support Agent**
 | `pin_review` | ADMIN (`merchant_admin`) | `PATCH /comment-ms/v1/merchant/reviews/{id}` | Merchant: pin high-quality reviews |
 | `reply_to_review` | ADMIN (`merchant_admin`) | `POST /comment-ms/v1/merchant/reviews/{id}/replies` | Merchant: auto-draft or post reply |
 | `list_reviews_by_status` | INTERNAL M2M (no auth) | `GET /comment-ms/v1/reviews/status/{status}` | Review Moderation Agent: batch-fetch reviews by moderation status (pending, processing, approved, hidden, rejected) |
-| `update_review_status` | INTERNAL M2M (no auth) | `POST /comment-ms/v1/reviews/status` | Review Moderation Agent: update review moderation status and flags (stars, is_mismatch, is_harmful, auto_flag); audit logged on server |
+| `update_review_status` | INTERNAL M2M (no auth) | `POST /comment-ms/v1/reviews/status` | Review Moderation Agent: update review status, rating (stars), and flags (is_mismatch, is_harmful, auto_flag); audit logged on server |
 
 ### 4.5 User Tools
 

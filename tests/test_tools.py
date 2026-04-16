@@ -572,7 +572,7 @@ async def test_update_review_status():
 
 
 @pytest.mark.asyncio
-async def test_update_review_status_with_flags():
+async def test_update_review_status_with_all_fields():
     http = _mock_http({"err_msg": "", "data": "update review success"})
     with patch(
         "ceramicraft_mcp_server.tools.comment.get_http_client", return_value=http
@@ -581,6 +581,7 @@ async def test_update_review_status_with_flags():
             _user_ctx(),
             "r1",
             "rejected",
+            stars=3,
             is_mismatch=True,
             is_harmful=True,
             auto_flag="spam",
@@ -588,6 +589,7 @@ async def test_update_review_status_with_flags():
         body = http.call.call_args.kwargs["json_body"]
         assert body["review_id"] == "r1"
         assert body["status"] == "rejected"
+        assert body["stars"] == 3
         assert body["is_mismatch"] is True
         assert body["is_harmful"] is True
         assert body["auto_flag"] == "spam"
@@ -597,6 +599,14 @@ async def test_update_review_status_with_flags():
 async def test_update_review_status_invalid_status():
     with pytest.raises(ToolError, match="Invalid status"):
         await COMMENT_TOOLS["update_review_status"](_user_ctx(), "r1", "invalid_status")
+
+
+@pytest.mark.asyncio
+async def test_update_review_status_invalid_stars():
+    with pytest.raises(ToolError, match="stars must be between 0 and 5"):
+        await COMMENT_TOOLS["update_review_status"](
+            _user_ctx(), "r1", "approved", stars=6
+        )
 
 
 @pytest.mark.asyncio

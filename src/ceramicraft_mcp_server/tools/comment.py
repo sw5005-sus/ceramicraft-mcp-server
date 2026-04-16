@@ -307,6 +307,7 @@ def register_comment_tools(mcp: FastMCP) -> None:
         ctx: Context,
         review_id: str,
         status: str,
+        stars: int | None = None,
         is_mismatch: bool | None = None,
         is_harmful: bool | None = None,
         auto_flag: str | None = None,
@@ -319,6 +320,7 @@ def register_comment_tools(mcp: FastMCP) -> None:
             ctx: MCP context (injected automatically).
             review_id: The review ID to update (required).
             status: New status for the review (required).
+            stars: Optional rating score (0-5) to update review rating.
             is_mismatch: Optional flag indicating if review is mismatch.
             is_harmful: Optional flag indicating if review is harmful.
             auto_flag: Optional auto-flag string (e.g., reason for auto-moderation).
@@ -337,9 +339,14 @@ def register_comment_tools(mcp: FastMCP) -> None:
         if not review_id:
             raise ToolError("review_id is required")
 
+        if stars is not None and (stars < 0 or stars > 5):
+            raise ToolError("stars must be between 0 and 5")
+
         client = get_http_client()
         body: dict[str, Any] = {"review_id": review_id, "status": status}
 
+        if stars is not None:
+            body["stars"] = stars
         if is_mismatch is not None:
             body["is_mismatch"] = is_mismatch
         if is_harmful is not None:
