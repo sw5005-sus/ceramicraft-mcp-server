@@ -15,7 +15,7 @@ from ceramicraft_mcp_server.auth import ROLE_MERCHANT_ADMIN, require_role, requi
 from ceramicraft_mcp_server.config import get_settings
 from ceramicraft_mcp_server.http_client import get_http_client
 
-PREFIX = "/v1"
+PREFIX = "/comment-ms/v1"
 
 
 def register_comment_tools(mcp: FastMCP) -> None:
