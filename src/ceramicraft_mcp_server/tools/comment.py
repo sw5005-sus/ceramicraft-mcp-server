@@ -259,6 +259,8 @@ def register_comment_tools(mcp: FastMCP) -> None:
     async def list_reviews_by_status(
         ctx: Context,
         status: str,
+        limit: int = 100,
+        cursor: str | None = None,
     ) -> dict[str, Any]:
         """List reviews filtered by status (internal M2M). No authentication required.
 
@@ -267,9 +269,11 @@ def register_comment_tools(mcp: FastMCP) -> None:
         Args:
             ctx: MCP context (injected automatically).
             status: Review status to filter by (required).
+            limit: Maximum number of items to return (default 100).
+            cursor: Pagination cursor from previous response.
 
         Returns:
-            A dict with reviews grouped by status.
+            A dict with reviews grouped by status and pagination info.
         """
         if status not in ["pending", "processing", "approved", "hidden", "rejected"]:
             raise ToolError(
@@ -277,11 +281,16 @@ def register_comment_tools(mcp: FastMCP) -> None:
                 "pending, processing, approved, hidden, rejected"
             )
 
+        params: dict[str, Any] = {"limit": limit}
+        if cursor:
+            params["cursor"] = cursor
+
         client = get_http_client()
         return await client.call(
             get_settings().COMMENT_MS_HTTP,
             "GET",
             f"{PREFIX}/reviews/status/{status}",
+            params=params,
         )
 
     @mcp.tool()
