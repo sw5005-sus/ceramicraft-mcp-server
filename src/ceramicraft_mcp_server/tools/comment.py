@@ -284,7 +284,7 @@ def register_comment_tools(mcp: FastMCP) -> None:
             limit = min(max(limit, 1), 500)
 
         client = get_http_client()
-        
+
         return await client.call(
             get_settings().COMMENT_MS_HTTP,
             "GET",
