@@ -259,8 +259,6 @@ def register_comment_tools(mcp: FastMCP) -> None:
     async def list_reviews_by_status(
         ctx: Context,
         status: str,
-        limit: int = 100,
-        cursor: str | None = None,
     ) -> dict[str, Any]:
         """List reviews filtered by status (internal M2M). No authentication required.
 
@@ -269,37 +267,28 @@ def register_comment_tools(mcp: FastMCP) -> None:
         Args:
             ctx: MCP context (injected automatically).
             status: Review status to filter by (required).
-            limit: Maximum number of reviews to return (default: 100, max: 500).
-            cursor: Optional pagination cursor for fetching next batch.
 
         Returns:
             A dict with:
             - err_msg: Error message (empty on success).
             - data: Object containing:
                 - items: Array of review objects with id, content, user_id, product_id,
-                  parent_id, stars, is_anonymous, is_pinned, pic_info, status,
-                  is_mismatch, is_harmful, auto_flag, created_at.
-                - next_cursor: Pagination cursor for next batch (or null).
+                  parent_id, stars, is_anonymous, is_pinned, pic_info, status, created_at.
         """
         if status not in ["pending", "processing", "approved", "hidden", "rejected"]:
             raise ToolError(
                 f"Invalid status '{status}'. Must be one of: "
                 "pending, processing, approved, hidden, rejected"
             )
-
         if limit < 1 or limit > 500:
             limit = min(max(limit, 1), 500)
 
         client = get_http_client()
-        body: dict[str, Any] = {"status": status, "limit": limit}
-        if cursor:
-            body["cursor"] = cursor
-
+        
         return await client.call(
             get_settings().COMMENT_MS_HTTP,
-            "POST",
-            f"{PREFIX}/reviews/status/list",
-            json_body=body,
+            "GET",
+            f"{PREFIX}/reviews/status/{status}",
         )
 
     @mcp.tool()
