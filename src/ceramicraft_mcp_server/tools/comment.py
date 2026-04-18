@@ -269,22 +269,15 @@ def register_comment_tools(mcp: FastMCP) -> None:
             status: Review status to filter by (required).
 
         Returns:
-            A dict with:
-            - err_msg: Error message (empty on success).
-            - data: Object containing:
-                - items: Array of review objects with id, content, user_id, product_id,
-                  parent_id, stars, is_anonymous, is_pinned, pic_info, status, created_at.
+            A dict with reviews grouped by status.
         """
         if status not in ["pending", "processing", "approved", "hidden", "rejected"]:
             raise ToolError(
                 f"Invalid status '{status}'. Must be one of: "
                 "pending, processing, approved, hidden, rejected"
             )
-        if limit < 1 or limit > 500:
-            limit = min(max(limit, 1), 500)
 
         client = get_http_client()
-
         return await client.call(
             get_settings().COMMENT_MS_HTTP,
             "GET",
