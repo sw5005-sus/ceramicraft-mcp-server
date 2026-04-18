@@ -229,16 +229,16 @@ Used by: **Customer Support Agent**
 
 ## 5. Tool Count Summary
 
-| Category | PUBLIC | USER | ADMIN | Total |
-|----------|--------|------|-------|-------|
-| Product | 2 | 0 | 7 | 9 |
-| Cart | 0 | 5 | 0 | 5 |
-| Order | 0 | 4 | 4 | 8 |
-| Comment/Review | 0 | 4 | 4 | 8 |
-| User | 0 | 6 | 0 | 6 |
-| Payment | 0 | 2 | 2 | 4 |
-| Notification | 0 | 1 | 0 | 1 |
-| **Total** | **2** | **22** | **17** | **41** |
+| Category | PUBLIC | USER | ADMIN | INTERNAL M2M | Total |
+|----------|--------|------|-------|--------------|-------|
+| Product | 2 | 0 | 7 | 0 | 9 |
+| Cart | 0 | 5 | 0 | 0 | 5 |
+| Order | 0 | 4 | 4 | 0 | 8 |
+| Comment/Review | 0 | 4 | 4 | 3 | 11 |
+| User | 0 | 6 | 0 | 0 | 6 |
+| Payment | 0 | 2 | 2 | 0 | 4 |
+| Notification | 0 | 1 | 0 | 0 | 1 |
+| **Total** | **2** | **22** | **17** | **3** | **44** |
 
 ## 6. Agent → Tool Mapping
 

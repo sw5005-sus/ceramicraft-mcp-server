@@ -41,10 +41,13 @@ def test_mcp_server_has_tools():
     assert "get_user_reviews" in tool_names
     assert "create_review" in tool_names
     assert "like_review" in tool_names
+    assert "list_reviews_by_user_id" in tool_names
     assert "list_reviews_admin" in tool_names
     assert "delete_review" in tool_names
     assert "pin_review" in tool_names
     assert "reply_to_review" in tool_names
+    assert "list_reviews_by_status" in tool_names
+    assert "update_review_status" in tool_names
 
     # Order tools
     assert "create_order" in tool_names
