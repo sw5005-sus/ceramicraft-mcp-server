@@ -3,7 +3,7 @@
 USER tools: list_product_reviews, get_user_reviews, create_review, like_review
 PUBLIC tools: list_reviews_by_user_id
 ADMIN tools: list_reviews_admin, delete_review, pin_review, reply_to_review
-AGENT tools: list_reviews_by_status, update_review_status
+PUBLIC tools: list_reviews_by_status, update_review_status
 """
 
 from typing import Any
@@ -253,14 +253,14 @@ def register_comment_tools(mcp: FastMCP) -> None:
             json_body={"content": content, "parentID": review_id},
         )
 
-    # ─── AGENT (Internal M2M) ──────────────────────────────
+    # ─── PUBLIC (moderation) ─────────────────────────────────
 
     @mcp.tool()
     async def list_reviews_by_status(
         ctx: Context,
         status: str,
     ) -> dict[str, Any]:
-        """List reviews filtered by status (internal M2M). No authentication required.
+        """List reviews filtered by status. No authentication required.
 
         Valid status values: pending, processing, approved, hidden, rejected.
 
@@ -294,7 +294,7 @@ def register_comment_tools(mcp: FastMCP) -> None:
         is_harmful: bool | None = None,
         auto_flag: str | None = None,
     ) -> dict[str, Any]:
-        """Update review status (internal M2M). No authentication required.
+        """Update review status. No authentication required.
 
         Valid status values: pending, processing, approved, hidden, rejected.
 

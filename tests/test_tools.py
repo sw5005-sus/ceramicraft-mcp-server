@@ -480,7 +480,7 @@ async def test_reply_to_review():
         assert body["parentID"] == "r1"
 
 
-# ─── Agent tools (M2M, no auth) ────────────────────────────
+# ─── Public tools (moderation, no auth) ────────────────────────────
 
 
 @pytest.mark.asyncio

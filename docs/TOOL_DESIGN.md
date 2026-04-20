@@ -53,17 +53,12 @@ this header into internal HTTP calls. Falls back to `sub` if metadata is absent.
 
 ## 3. Auth Model
 
-### Auth Levels
+### Three Auth Levels
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │  Level 0: PUBLIC — No token needed                       │
 │  Anyone can call. Used by Search Agent for browsing.     │
-├─────────────────────────────────────────────────────────┤
-│  INTERNAL M2M — No token needed (service-to-service)     │
-│  Technically unauthenticated like PUBLIC, but intended    │
-│  only for internal agent-to-microservice calls.          │
-│  Not exposed to end users. Used by moderation agents.    │
 ├─────────────────────────────────────────────────────────┤
 │  Level 1: USER — Valid Zitadel JWT required              │
 │  Token must contain `local_userid` in Zitadel user       │
@@ -100,11 +95,6 @@ this header into internal HTTP calls. Falls back to `sub` if metadata is absent.
 @mcp.tool()
 async def search_products(keyword: str, ...) -> dict:
     ...
-
-# INTERNAL M2M — no check (service-to-service only)
-@mcp.tool()
-async def list_reviews_by_status(ctx: Context, status: str) -> dict:
-    ...  # no auth check, but intended for internal agent calls only
 
 # USER — verify token, extract user_id
 @mcp.tool()
@@ -202,8 +192,8 @@ Used by: **Comment Review Agent**, **Customer Support Agent**
 | `delete_review` | ADMIN (`merchant_admin`) | `DELETE /comment-ms/v1/merchant/reviews/{id}` | Merchant: remove a review |
 | `pin_review` | ADMIN (`merchant_admin`) | `PATCH /comment-ms/v1/merchant/reviews/{id}` | Merchant: pin high-quality reviews |
 | `reply_to_review` | ADMIN (`merchant_admin`) | `POST /comment-ms/v1/merchant/reviews/{id}/replies` | Merchant: auto-draft or post reply |
-| `list_reviews_by_status` | INTERNAL M2M (no auth) | `GET /comment-ms/v1/reviews/status/{status}` | Review Moderation Agent: batch-fetch reviews by moderation status (pending, processing, approved, hidden, rejected) |
-| `update_review_status` | INTERNAL M2M (no auth) | `POST /comment-ms/v1/reviews/status` | Review Moderation Agent: update review status, rating (stars), and flags (is_mismatch, is_harmful, auto_flag); audit logged on server |
+| `list_reviews_by_status` | PUBLIC | `GET /comment-ms/v1/reviews/status/{status}` | Review Moderation Agent: batch-fetch reviews by moderation status (pending, processing, approved, hidden, rejected) |
+| `update_review_status` | PUBLIC | `POST /comment-ms/v1/reviews/status` | Review Moderation Agent: update review status, rating (stars), and flags (is_mismatch, is_harmful, auto_flag); audit logged on server |
 
 ### 4.5 User Tools
 
@@ -239,16 +229,16 @@ Used by: **Customer Support Agent**
 
 ## 5. Tool Count Summary
 
-| Category | PUBLIC | USER | ADMIN | INTERNAL M2M | Total |
-|----------|--------|------|-------|--------------|-------|
-| Product | 2 | 0 | 7 | 0 | 9 |
-| Cart | 0 | 5 | 0 | 0 | 5 |
-| Order | 0 | 4 | 4 | 0 | 8 |
-| Comment/Review | 1 | 4 | 4 | 2 | 11 |
-| User | 0 | 6 | 0 | 0 | 6 |
-| Payment | 0 | 2 | 2 | 0 | 4 |
-| Notification | 0 | 1 | 0 | 0 | 1 |
-| **Total** | **3** | **22** | **17** | **2** | **44** |
+| Category | PUBLIC | USER | ADMIN | Total |
+|----------|--------|------|-------|-------|
+| Product | 2 | 0 | 7 | 9 |
+| Cart | 0 | 5 | 0 | 5 |
+| Order | 0 | 4 | 4 | 8 |
+| Comment/Review | 3 | 4 | 4 | 11 |
+| User | 0 | 6 | 0 | 6 |
+| Payment | 0 | 2 | 2 | 4 |
+| Notification | 0 | 1 | 0 | 1 |
+| **Total** | **5** | **22** | **17** | **44** |
 
 ## 6. Agent → Tool Mapping
 
