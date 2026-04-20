@@ -87,7 +87,6 @@ Generated from swagger.json / proto files in each microservice repo.
 | GET | /comment-ms/v1/customer/reviews/product/{product_id} | Get reviews by product |
 | GET | /comment-ms/v1/customer/reviews/user | Get reviews by user |
 | POST | /comment-ms/v1/customer/reviews/{review_id}/like | Like a review |
-| GET | /comment-ms/v1/users/{user_id}/reviews | Get all approved reviews by user (public) |
 
 ### Merchant
 | Method | Path | Description |
@@ -96,6 +95,11 @@ Generated from swagger.json / proto files in each microservice repo.
 | DELETE | /comment-ms/v1/merchant/reviews/{review_id} | Delete a review |
 | PATCH | /comment-ms/v1/merchant/reviews/{review_id} | Pin a review |
 | POST | /comment-ms/v1/merchant/reviews/{review_id}/replies | Reply to review |
+
+### Public
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | /comment-ms/v1/users/{user_id}/reviews | Get all approved reviews by user |
 | GET | /comment-ms/v1/reviews/status/{status} | List reviews by status (no auth) |
 | POST | /comment-ms/v1/reviews/status | Update review status (no auth) |
 
