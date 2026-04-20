@@ -58,7 +58,7 @@ AI Agents ──MCP (Streamable HTTP)──▶ MCP Server ──HTTP──▶ Ba
 | `delete_review` | ADMIN (`merchant_admin`) | comment-ms | Delete a review |
 | `pin_review` | ADMIN (`merchant_admin`) | comment-ms | Pin / unpin a review |
 | `reply_to_review` | ADMIN (`merchant_admin`) | comment-ms | Reply to a review as merchant |
-| `list_reviews_by_status` | INTERNAL M2M | comment-ms | List reviews by moderation status with pagination |
+| `list_reviews_by_status` | INTERNAL M2M | comment-ms | List reviews by moderation status |
 | `update_review_status` | INTERNAL M2M | comment-ms | Update review status and flags (is_mismatch, is_harmful, auto_flag) |
 
 ### User (6 tools)

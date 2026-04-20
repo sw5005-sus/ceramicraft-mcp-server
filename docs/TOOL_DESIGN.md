@@ -53,12 +53,17 @@ this header into internal HTTP calls. Falls back to `sub` if metadata is absent.
 
 ## 3. Auth Model
 
-### Three Auth Levels
+### Auth Levels
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │  Level 0: PUBLIC — No token needed                       │
 │  Anyone can call. Used by Search Agent for browsing.     │
+├─────────────────────────────────────────────────────────┤
+│  INTERNAL M2M — No token needed (service-to-service)     │
+│  Technically unauthenticated like PUBLIC, but intended    │
+│  only for internal agent-to-microservice calls.          │
+│  Not exposed to end users. Used by moderation agents.    │
 ├─────────────────────────────────────────────────────────┤
 │  Level 1: USER — Valid Zitadel JWT required              │
 │  Token must contain `local_userid` in Zitadel user       │
@@ -95,6 +100,11 @@ this header into internal HTTP calls. Falls back to `sub` if metadata is absent.
 @mcp.tool()
 async def search_products(keyword: str, ...) -> dict:
     ...
+
+# INTERNAL M2M — no check (service-to-service only)
+@mcp.tool()
+async def list_reviews_by_status(ctx: Context, status: str) -> dict:
+    ...  # no auth check, but intended for internal agent calls only
 
 # USER — verify token, extract user_id
 @mcp.tool()
@@ -234,11 +244,11 @@ Used by: **Customer Support Agent**
 | Product | 2 | 0 | 7 | 0 | 9 |
 | Cart | 0 | 5 | 0 | 0 | 5 |
 | Order | 0 | 4 | 4 | 0 | 8 |
-| Comment/Review | 0 | 4 | 4 | 3 | 11 |
+| Comment/Review | 1 | 4 | 4 | 2 | 11 |
 | User | 0 | 6 | 0 | 0 | 6 |
 | Payment | 0 | 2 | 2 | 0 | 4 |
 | Notification | 0 | 1 | 0 | 0 | 1 |
-| **Total** | **2** | **22** | **17** | **3** | **44** |
+| **Total** | **3** | **22** | **17** | **2** | **44** |
 
 ## 6. Agent → Tool Mapping
 
