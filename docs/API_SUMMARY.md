@@ -87,7 +87,7 @@ Generated from swagger.json / proto files in each microservice repo.
 | GET | /comment-ms/v1/customer/reviews/product/{product_id} | Get reviews by product |
 | GET | /comment-ms/v1/customer/reviews/user | Get reviews by user |
 | POST | /comment-ms/v1/customer/reviews/{review_id}/like | Like a review |
-| GET | /comment-ms/v1/users/{user_id}/reviews | Get all non-rejected reviews by user (public) |
+| GET | /comment-ms/v1/users/{user_id}/reviews | Get all approved reviews by user (public) |
 
 ### Merchant
 | Method | Path | Description |

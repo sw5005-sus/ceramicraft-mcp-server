@@ -134,9 +134,9 @@ def register_comment_tools(mcp: FastMCP) -> None:
 
     @mcp.tool()
     async def list_reviews_by_user_id(user_id: int) -> dict[str, Any]:
-        """Get all non-rejected reviews submitted by a specific user. No authentication required.
+        """Get all approved reviews submitted by a specific user. No authentication required.
 
-        Results are sorted by created_at descending. Reviews with status=rejected are excluded.
+        Results are sorted by created_at descending. Only reviews with status=approved are included.
 
         Args:
             user_id: The ID of the user to get reviews for.

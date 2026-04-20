@@ -187,7 +187,7 @@ Used by: **Comment Review Agent**, **Customer Support Agent**
 | `get_user_reviews` | USER | `GET /comment-ms/v1/customer/reviews/user` | Support Agent: show user's own reviews |
 | `create_review` | USER | `POST /comment-ms/v1/customer/reviews` | Support Agent: help user post review |
 | `like_review` | USER | `POST /comment-ms/v1/customer/reviews/{id}/like` | Support Agent: like on behalf of user |
-| `list_reviews_by_user_id` | PUBLIC | `GET /comment-ms/v1/users/{user_id}/reviews` | Support Agent / Review Moderation Agent: get all non-rejected reviews by a user (sorted by created_at desc) |
+| `list_reviews_by_user_id` | PUBLIC | `GET /comment-ms/v1/users/{user_id}/reviews` | Support Agent / Review Moderation Agent: get all approved reviews by a user (sorted by created_at desc) |
 | `list_reviews_admin` | ADMIN (`merchant_admin`) | `POST /comment-ms/v1/merchant/reviews/list` | Merchant: list reviews filtered by product_id and stars (dashboard view) |
 | `delete_review` | ADMIN (`merchant_admin`) | `DELETE /comment-ms/v1/merchant/reviews/{id}` | Merchant: remove a review |
 | `pin_review` | ADMIN (`merchant_admin`) | `PATCH /comment-ms/v1/merchant/reviews/{id}` | Merchant: pin high-quality reviews |
