@@ -2,6 +2,13 @@ version = 1
 revision = 3
 requires-python = ">=3.12"
 
+[manifest]
+overrides = [
+    { name = "cryptography", specifier = ">=46.0.7" },
+    { name = "pygments", specifier = ">=2.20.0" },
+    { name = "python-multipart", specifier = ">=0.0.26" },
+]
+
 [[package]]
 name = "annotated-doc"
 version = "0.0.4"
@@ -47,19 +54,16 @@ name = "ceramicraft-mcp-server"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
-    { name = "cryptography" },
     { name = "dttb" },
     { name = "httpx" },
     { name = "mcp", extra = ["cli"] },
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "pyjwt", extra = ["crypto"] },
-    { name = "python-multipart" },
 ]
 
 [package.dev-dependencies]
 dev = [
-    { name = "pygments" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
@@ -69,19 +73,16 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "cryptography", specifier = ">=46.0.7" },
     { name = "dttb", specifier = ">=0.3.2" },
     { name = "httpx", specifier = ">=0.28.0" },
     { name = "mcp", extras = ["cli"], specifier = ">=1.26.0" },
     { name = "pydantic", specifier = ">=2.10.0" },
     { name = "pydantic-settings", specifier = ">=2.7.0" },
     { name = "pyjwt", extras = ["crypto"], specifier = ">=2.12.1" },
-    { name = "python-multipart", specifier = ">=0.0.26" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "pygments", specifier = ">=2.20.0" },
     { name = "pytest", specifier = ">=8.0" },
     { name = "pytest-asyncio", specifier = ">=0.25.0" },
     { name = "pytest-cov", specifier = ">=7.1.0" },
