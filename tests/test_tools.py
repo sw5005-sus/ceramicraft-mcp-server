@@ -101,7 +101,7 @@ async def test_search_products():
         assert "products" in result
         assert result["products"][0]["price"] == 35.0
         assert result["products"][0]["price_cents"] == 3500
-        assert result["products"][0]["price_display"] == "S$35.00"
+        assert result["products"][0]["price_display"] == "SGD 35.00"
         http.call.assert_called_once()
         assert http.call.call_args.args[1] == "GET"
 
@@ -280,7 +280,7 @@ async def test_estimate_cart_price():
         assert result["tax"] == 1.0
         assert result["total"] == 41.0
         assert result["total_cents"] == 4100
-        assert result["total_display"] == "S$41.00"
+        assert result["total_display"] == "SGD 41.00"
 
 
 # ─── Order tools ───────────────────────────────────────────
