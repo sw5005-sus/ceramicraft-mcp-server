@@ -138,6 +138,11 @@ MCP Clients (agents) pass the Zitadel JWT in the MCP request. Two scenarios:
 
 Used by: **Search Intention Agent**, **Customer Support Agent**, **Product Agent**
 
+Money-unit contract: backend product/cart/order/payment APIs use integer cents.
+Customer-facing MCP read tools convert those fields to display dollars and keep
+raw cents in `<field>_cents` plus formatted `<field>_display`. Admin write tools
+continue to send cents unchanged.
+
 | Tool | Auth | Backend Call | Agent Use Case |
 |------|------|-------------|----------------|
 | `search_products` | PUBLIC | `GET /product-ms/v1/customer/products?keyword=...` | Search Agent: semantic search → keyword extraction → call this |

@@ -11,8 +11,10 @@ from mcp.server.fastmcp import Context, FastMCP
 from ceramicraft_mcp_server.auth import ROLE_MERCHANT_ADMIN, require_role, require_user
 from ceramicraft_mcp_server.config import get_settings
 from ceramicraft_mcp_server.http_client import get_http_client
+from ceramicraft_mcp_server.tools.money import with_display_money_fields
 
 PREFIX = "/payment-ms/v1"
+USER_PAYMENT_PRICE_KEYS = {"balance", "current_balance", "top_up_amount"}
 
 
 def register_payment_tools(mcp: FastMCP) -> None:
@@ -32,12 +34,13 @@ def register_payment_tools(mcp: FastMCP) -> None:
         """
         user = await require_user(ctx)
         client = get_http_client()
-        return await client.call(
+        result = await client.call(
             get_settings().PAYMENT_MS_HTTP,
             "GET",
             f"{PREFIX}/customer/pay-accounts/self",
             user_id=user.user_id_int,
         )
+        return with_display_money_fields(result, USER_PAYMENT_PRICE_KEYS)
 
     @mcp.tool()
     async def top_up_account(
@@ -55,13 +58,14 @@ def register_payment_tools(mcp: FastMCP) -> None:
         """
         user = await require_user(ctx)
         client = get_http_client()
-        return await client.call(
+        result = await client.call(
             get_settings().PAYMENT_MS_HTTP,
             "POST",
             f"{PREFIX}/customer/pay-accounts/self/top-ups",
             user_id=user.user_id_int,
             json_body={"redeem_code": redeem_code},
         )
+        return with_display_money_fields(result, USER_PAYMENT_PRICE_KEYS)
 
     # ─── ADMIN (Merchant) ──────────────────────────────────
 

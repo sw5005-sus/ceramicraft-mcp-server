@@ -18,8 +18,10 @@ from ceramicraft_mcp_server.auth import (
 )
 from ceramicraft_mcp_server.config import get_settings
 from ceramicraft_mcp_server.http_client import get_http_client
+from ceramicraft_mcp_server.tools.money import with_display_money_fields
 
 PREFIX = "/product-ms/v1"
+CUSTOMER_PRICE_KEYS = {"price"}
 
 
 def register_product_tools(mcp: FastMCP) -> None:
@@ -52,12 +54,13 @@ def register_product_tools(mcp: FastMCP) -> None:
         if category:
             params["category"] = category
 
-        return await client.call(
+        result = await client.call(
             get_settings().PRODUCT_MS_HTTP,
             "GET",
             f"{PREFIX}/customer/products",
             params=params,
         )
+        return with_display_money_fields(result, CUSTOMER_PRICE_KEYS)
 
     @mcp.tool()
     async def get_product(product_id: int) -> dict[str, Any]:
@@ -70,11 +73,12 @@ def register_product_tools(mcp: FastMCP) -> None:
             Product details including name, description, price, and images.
         """
         client = get_http_client()
-        return await client.call(
+        result = await client.call(
             get_settings().PRODUCT_MS_HTTP,
             "GET",
             f"{PREFIX}/customer/product/{product_id}",
         )
+        return with_display_money_fields(result, CUSTOMER_PRICE_KEYS)
 
     # ─── ADMIN (Merchant) ──────────────────────────────────
 

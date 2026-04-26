@@ -10,8 +10,18 @@ from mcp.server.fastmcp import Context, FastMCP
 from ceramicraft_mcp_server.auth import require_user
 from ceramicraft_mcp_server.config import get_settings
 from ceramicraft_mcp_server.http_client import get_http_client
+from ceramicraft_mcp_server.tools.money import with_display_money_fields
 
 PREFIX = "/product-ms/v1"
+CART_PRICE_KEYS = {
+    "price",
+    "product_price",
+    "selected_price",
+    "total_price",
+    "unit_price",
+    "subtotal",
+}
+CART_ESTIMATE_PRICE_KEYS = CART_PRICE_KEYS | {"shipping_price", "tax", "total"}
 
 
 def register_cart_tools(mcp: FastMCP) -> None:
@@ -29,12 +39,13 @@ def register_cart_tools(mcp: FastMCP) -> None:
         """
         user = await require_user(ctx)
         client = get_http_client()
-        return await client.call(
+        result = await client.call(
             get_settings().PRODUCT_MS_HTTP,
             "GET",
             f"{PREFIX}/customer/cart",
             user_id=user.user_id_int,
         )
+        return with_display_money_fields(result, CART_PRICE_KEYS)
 
     @mcp.tool()
     async def add_to_cart(
@@ -137,9 +148,10 @@ def register_cart_tools(mcp: FastMCP) -> None:
         """
         user = await require_user(ctx)
         client = get_http_client()
-        return await client.call(
+        result = await client.call(
             get_settings().PRODUCT_MS_HTTP,
             "GET",
             f"{PREFIX}/customer/cart/price-estimate",
             user_id=user.user_id_int,
         )
+        return with_display_money_fields(result, CART_ESTIMATE_PRICE_KEYS)

@@ -93,24 +93,29 @@ PRODUCT_TOOLS = _register(
 
 @pytest.mark.asyncio
 async def test_search_products():
-    http = _mock_http({"products": [{"id": 1}]})
+    http = _mock_http({"products": [{"id": 1, "price": 3500}]})
     with patch(
         "ceramicraft_mcp_server.tools.product.get_http_client", return_value=http
     ):
         result = await PRODUCT_TOOLS["search_products"]("vase", "", 0, 0)
         assert "products" in result
+        assert result["products"][0]["price"] == 35.0
+        assert result["products"][0]["price_cents"] == 3500
+        assert result["products"][0]["price_display"] == "$35.00"
         http.call.assert_called_once()
         assert http.call.call_args.args[1] == "GET"
 
 
 @pytest.mark.asyncio
 async def test_get_product():
-    http = _mock_http({"id": 1, "name": "Bowl"})
+    http = _mock_http({"id": 1, "name": "Bowl", "price": 2800})
     with patch(
         "ceramicraft_mcp_server.tools.product.get_http_client", return_value=http
     ):
         result = await PRODUCT_TOOLS["get_product"](1)
         assert result["id"] == 1
+        assert result["price"] == 28.0
+        assert result["price_cents"] == 2800
 
 
 @pytest.mark.asyncio
@@ -212,11 +217,20 @@ CART_TOOLS = _register("ceramicraft_mcp_server.tools.cart", "register_cart_tools
 
 @pytest.mark.asyncio
 async def test_get_cart():
-    http = _mock_http({"items": []})
+    http = _mock_http(
+        {
+            "cart_items": [
+                {"product_info": {"id": 1, "price": 3500}, "total_price": 7000}
+            ],
+            "selected_price": 7000,
+        }
+    )
     p1, p2 = _patch_user("cart", http)
     with p1, p2:
         result = await CART_TOOLS["get_cart"](_user_ctx())
-        assert result == {"items": []}
+        assert result["cart_items"][0]["product_info"]["price"] == 35.0
+        assert result["cart_items"][0]["total_price"] == 70.0
+        assert result["selected_price"] == 70.0
         assert http.call.call_args.kwargs["user_id"] == 42
 
 
@@ -255,11 +269,18 @@ async def test_remove_cart_item():
 
 @pytest.mark.asyncio
 async def test_estimate_cart_price():
-    http = _mock_http({"total": 5000})
+    http = _mock_http(
+        {"product_price": 3500, "shipping_price": 500, "tax": 100, "total": 4100}
+    )
     p1, p2 = _patch_user("cart", http)
     with p1, p2:
         result = await CART_TOOLS["estimate_cart_price"](_user_ctx())
-        assert result["total"] == 5000
+        assert result["product_price"] == 35.0
+        assert result["shipping_price"] == 5.0
+        assert result["tax"] == 1.0
+        assert result["total"] == 41.0
+        assert result["total_cents"] == 4100
+        assert result["total_display"] == "$41.00"
 
 
 # ─── Order tools ───────────────────────────────────────────
@@ -270,12 +291,14 @@ ORDER_TOOLS = _register("ceramicraft_mcp_server.tools.order", "register_order_to
 
 @pytest.mark.asyncio
 async def test_create_order():
-    http = _mock_http({"order_no": "ORD-001"})
+    http = _mock_http({"order_no": "ORD-001", "pay_amount": 4100})
     p1, p2 = _patch_user("order", http)
     with p1, p2:
-        await ORDER_TOOLS["create_order"](
+        result = await ORDER_TOOLS["create_order"](
             _user_ctx(), "John", "Doe", "+65123", "123 Street", "SG", 123456
         )
+        assert result["pay_amount"] == 41.0
+        assert result["pay_amount_cents"] == 4100
         body = http.call.call_args.kwargs["json_body"]
         assert body["receiver_first_name"] == "John"
         assert body["receiver_country"] == "SG"
@@ -284,10 +307,14 @@ async def test_create_order():
 
 @pytest.mark.asyncio
 async def test_list_my_orders():
-    http = _mock_http({"orders": [], "total": 0})
+    http = _mock_http(
+        {"orders": [{"order_no": "ORD-001", "total_amount": 4100}], "total": 1}
+    )
     p1, p2 = _patch_user("order", http)
     with p1, p2:
-        await ORDER_TOOLS["list_my_orders"](_user_ctx(), 10, 0, "2026-01-01")
+        result = await ORDER_TOOLS["list_my_orders"](_user_ctx(), 10, 0, "2026-01-01")
+        assert result["orders"][0]["total_amount"] == 41.0
+        assert result["orders"][0]["total_amount_cents"] == 4100
         body = http.call.call_args.kwargs["json_body"]
         assert body["limit"] == 10
         assert body["start_time"] == "2026-01-01"
@@ -295,11 +322,20 @@ async def test_list_my_orders():
 
 @pytest.mark.asyncio
 async def test_get_order_detail():
-    http = _mock_http({"order_no": "ORD-001"})
+    http = _mock_http(
+        {
+            "order_no": "ORD-001",
+            "total_amount": 4100,
+            "items": [{"price": 3500, "total_price": 7000}],
+        }
+    )
     p1, p2 = _patch_user("order", http)
     with p1, p2:
-        await ORDER_TOOLS["get_order_detail"](_user_ctx(), "ORD-001")
+        result = await ORDER_TOOLS["get_order_detail"](_user_ctx(), "ORD-001")
         assert "ORD-001" in http.call.call_args.args[2]
+        assert result["total_amount"] == 41.0
+        assert result["items"][0]["price"] == 35.0
+        assert result["items"][0]["total_price"] == 70.0
 
 
 @pytest.mark.asyncio
@@ -679,15 +715,18 @@ async def test_get_pay_account():
     p1, p2 = _patch_user("payment", http)
     with p1, p2:
         result = await PAYMENT_TOOLS["get_pay_account"](_user_ctx())
-        assert result["balance"] == 1000
+        assert result["balance"] == 10.0
+        assert result["balance_cents"] == 1000
 
 
 @pytest.mark.asyncio
 async def test_top_up_account():
-    http = _mock_http({"balance": 5000})
+    http = _mock_http({"current_balance": 5000, "top_up_amount": 1000})
     p1, p2 = _patch_user("payment", http)
     with p1, p2:
-        await PAYMENT_TOOLS["top_up_account"](_user_ctx(), "CODE-123")
+        result = await PAYMENT_TOOLS["top_up_account"](_user_ctx(), "CODE-123")
+        assert result["current_balance"] == 50.0
+        assert result["top_up_amount"] == 10.0
         body = http.call.call_args.kwargs["json_body"]
         assert body == {"redeem_code": "CODE-123"}
 

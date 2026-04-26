@@ -11,8 +11,10 @@ from mcp.server.fastmcp import Context, FastMCP
 from ceramicraft_mcp_server.auth import ROLE_MERCHANT_ADMIN, require_role, require_user
 from ceramicraft_mcp_server.config import get_settings
 from ceramicraft_mcp_server.http_client import get_http_client
+from ceramicraft_mcp_server.tools.money import with_display_money_fields
 
 PREFIX = "/order-ms/v1"
+USER_ORDER_PRICE_KEYS = {"pay_amount", "price", "total_amount", "total_price"}
 
 
 def register_order_tools(mcp: FastMCP) -> None:
@@ -61,13 +63,14 @@ def register_order_tools(mcp: FastMCP) -> None:
         if remark:
             body["remark"] = remark
 
-        return await client.call(
+        result = await client.call(
             get_settings().ORDER_MS_HTTP,
             "POST",
             f"{PREFIX}/customer/orders",
             user_id=user.user_id_int,
             json_body=body,
         )
+        return with_display_money_fields(result, USER_ORDER_PRICE_KEYS)
 
     @mcp.tool()
     async def list_my_orders(
@@ -97,13 +100,14 @@ def register_order_tools(mcp: FastMCP) -> None:
         if end_time:
             body["end_time"] = end_time
 
-        return await client.call(
+        result = await client.call(
             get_settings().ORDER_MS_HTTP,
             "POST",
             f"{PREFIX}/customer/orders/list",
             user_id=user.user_id_int,
             json_body=body,
         )
+        return with_display_money_fields(result, USER_ORDER_PRICE_KEYS)
 
     @mcp.tool()
     async def get_order_detail(ctx: Context, order_no: str) -> dict[str, Any]:
@@ -118,12 +122,13 @@ def register_order_tools(mcp: FastMCP) -> None:
         """
         user = await require_user(ctx)
         client = get_http_client()
-        return await client.call(
+        result = await client.call(
             get_settings().ORDER_MS_HTTP,
             "GET",
             f"{PREFIX}/customer/orders/{order_no}",
             user_id=user.user_id_int,
         )
+        return with_display_money_fields(result, USER_ORDER_PRICE_KEYS)
 
     @mcp.tool()
     async def confirm_receipt(ctx: Context, order_no: str) -> dict[str, Any]:
