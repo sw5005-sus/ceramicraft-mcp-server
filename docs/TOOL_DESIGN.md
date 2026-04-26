@@ -145,7 +145,7 @@ formatted `<field>_display`. Admin write tools continue to send cents unchanged.
 
 | Tool | Auth | Backend Call | Agent Use Case |
 |------|------|-------------|----------------|
-| `search_products` | PUBLIC | `GET /product-ms/v1/customer/products?keyword=...` | Search Agent: semantic search → keyword extraction → call this |
+| `search_products` | PUBLIC | `GET /product-ms/v1/customer/products?keyword=...` or `category=...` | Search/list products; supports empty keyword and lightweight fallback such as cup→mug/pottery and 陶瓷→pottery/ceramics |
 | `get_product` | PUBLIC | `GET /product-ms/v1/customer/product/{id}` | Support Agent: show product details to user |
 | `create_product` | ADMIN (`merchant_admin`, `product_editor`) | `POST /product-ms/v1/merchant/products` | Product Agent: auto-generate listing |
 | `update_product` | ADMIN (`merchant_admin`, `product_editor`) | `PUT /product-ms/v1/merchant/products/{id}` | Product Agent: edit descriptions |

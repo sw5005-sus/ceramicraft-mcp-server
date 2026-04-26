@@ -1,6 +1,6 @@
 """Tests for all MCP tool functions — mocks HTTP client and auth."""
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, call, patch
 
 import pytest
 from mcp.server.fastmcp.exceptions import ToolError
@@ -104,6 +104,90 @@ async def test_search_products():
         assert result["products"][0]["price_display"] == "SGD 35.00"
         http.call.assert_called_once()
         assert http.call.call_args.args[1] == "GET"
+
+
+@pytest.mark.asyncio
+async def test_search_products_falls_back_to_mug_for_cup():
+    http = _mock_http()
+    http.call = AsyncMock(
+        side_effect=[
+            {"data": {"list": [], "total": 0}},
+            {
+                "data": {
+                    "list": [{"id": 2, "name": "White Glaze Mug", "price": 2800}],
+                    "total": 1,
+                }
+            },
+        ]
+    )
+    with patch(
+        "ceramicraft_mcp_server.tools.product.get_http_client", return_value=http
+    ):
+        result = await PRODUCT_TOOLS["search_products"]("cup", "", 0, 0)
+        assert result["data"]["list"][0]["name"] == "White Glaze Mug"
+        assert result["data"]["list"][0]["price_display"] == "SGD 28.00"
+        assert http.call.await_count == 2
+        http.call.assert_has_awaits(
+            [
+                call(
+                    "http://product-ms-svc:8080",
+                    "GET",
+                    "/product-ms/v1/customer/products",
+                    params={"offset": 0, "order_by": 0, "keyword": "cup"},
+                ),
+                call(
+                    "http://product-ms-svc:8080",
+                    "GET",
+                    "/product-ms/v1/customer/products",
+                    params={"offset": 0, "order_by": 0, "keyword": "mug"},
+                ),
+            ]
+        )
+
+
+@pytest.mark.asyncio
+async def test_search_products_falls_back_to_category_for_chinese_ceramic():
+    http = _mock_http()
+    http.call = AsyncMock(
+        side_effect=[
+            {"data": {"list": [], "total": 0}},
+            {"data": {"list": [{"id": 1, "name": "Blue-and-white bowl"}], "total": 1}},
+        ]
+    )
+    with patch(
+        "ceramicraft_mcp_server.tools.product.get_http_client", return_value=http
+    ):
+        result = await PRODUCT_TOOLS["search_products"]("陶瓷", "", 0, 0)
+        assert result["data"]["list"][0]["name"] == "Blue-and-white bowl"
+        http.call.assert_has_awaits(
+            [
+                call(
+                    "http://product-ms-svc:8080",
+                    "GET",
+                    "/product-ms/v1/customer/products",
+                    params={"offset": 0, "order_by": 0, "keyword": "陶瓷"},
+                ),
+                call(
+                    "http://product-ms-svc:8080",
+                    "GET",
+                    "/product-ms/v1/customer/products",
+                    params={"offset": 0, "order_by": 0, "category": "pottery"},
+                ),
+            ]
+        )
+
+
+@pytest.mark.asyncio
+async def test_search_products_does_not_fallback_when_original_matches():
+    http = _mock_http(
+        {"data": {"list": [{"id": 2, "name": "White Glaze Mug"}], "total": 1}}
+    )
+    with patch(
+        "ceramicraft_mcp_server.tools.product.get_http_client", return_value=http
+    ):
+        result = await PRODUCT_TOOLS["search_products"]("White Glaze Mug", "", 0, 0)
+        assert result["data"]["list"][0]["name"] == "White Glaze Mug"
+        http.call.assert_awaited_once()
 
 
 @pytest.mark.asyncio

@@ -20,7 +20,7 @@ Merchant/admin write tools still accept cents to match backend API contracts.
 
 | Tool | Auth | Backend | Description |
 |------|------|---------|-------------|
-| `search_products` | PUBLIC | product-ms | Search products by keyword, category, price range |
+| `search_products` | PUBLIC | product-ms | Search/list products by keyword or category; empty keyword lists products; includes lightweight synonym/category fallback for common terms like cup/mug/陶瓷 |
 | `get_product` | PUBLIC | product-ms | Get product detail by ID |
 | `create_product` | ADMIN (`merchant_admin`, `product_editor`) | product-ms | Create a new product listing |
 | `update_product` | ADMIN (`merchant_admin`, `product_editor`) | product-ms | Edit product info (name, desc, price, ceramic attributes) |

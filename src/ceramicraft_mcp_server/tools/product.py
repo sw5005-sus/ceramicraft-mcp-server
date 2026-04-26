@@ -23,6 +23,63 @@ from ceramicraft_mcp_server.tools.money import with_display_money_fields
 PREFIX = "/product-ms/v1"
 CUSTOMER_PRICE_KEYS = {"price"}
 
+# Lightweight public-search normalization.  The product service currently does
+# literal keyword/category matching, while users often ask in broader terms
+# (e.g. "cup" for a mug, or Chinese keywords for English product names).
+# Keep this layer small and deterministic so every agent gets the same fallback
+# behavior without changing product-ms.
+SEARCH_FALLBACKS: dict[str, tuple[dict[str, str], ...]] = {
+    "cup": ({"keyword": "mug"}, {"keyword": "bowl"}, {"category": "pottery"}),
+    "cups": ({"keyword": "mug"}, {"keyword": "bowl"}, {"category": "pottery"}),
+    "mugs": ({"keyword": "mug"}, {"category": "pottery"}),
+    "pottery": ({"category": "pottery"},),
+    "ceramic": ({"category": "ceramics"}, {"category": "pottery"}),
+    "ceramics": ({"category": "ceramics"}, {"category": "pottery"}),
+    "vases": ({"keyword": "vase"}, {"category": "vases"}),
+    "杯": ({"keyword": "mug"}, {"keyword": "bowl"}, {"category": "pottery"}),
+    "杯子": ({"keyword": "mug"}, {"keyword": "bowl"}, {"category": "pottery"}),
+    "茶杯": ({"keyword": "mug"}, {"keyword": "teapot"}, {"category": "pottery"}),
+    "马克杯": ({"keyword": "mug"}, {"category": "pottery"}),
+    "陶瓷": ({"category": "pottery"}, {"category": "ceramics"}),
+    "瓷器": ({"category": "ceramics"}, {"category": "pottery"}),
+    "花瓶": ({"keyword": "vase"}, {"category": "vases"}, {"category": "vases_decor"}),
+    "碗": ({"keyword": "bowl"}, {"category": "pottery"}),
+    "茶壶": ({"keyword": "teapot"}, {"category": "ceramics"}),
+}
+
+
+def _build_search_params(
+    *, keyword: str, category: str, offset: int, order_by: int
+) -> dict[str, Any]:
+    params: dict[str, Any] = {"offset": offset, "order_by": order_by}
+    if keyword:
+        params["keyword"] = keyword
+    if category:
+        params["category"] = category
+    return params
+
+
+def _product_items(result: dict[str, Any]) -> list[Any]:
+    data = result.get("data")
+    if isinstance(data, dict):
+        items = data.get("list")
+        if isinstance(items, list):
+            return items
+    products = result.get("products")
+    if isinstance(products, list):
+        return products
+    items = result.get("list")
+    if isinstance(items, list):
+        return items
+    return []
+
+
+def _fallback_searches(keyword: str, category: str) -> tuple[dict[str, str], ...]:
+    if category:
+        return ()
+    normalized = keyword.strip().lower()
+    return SEARCH_FALLBACKS.get(normalized, ())
+
 
 def register_product_tools(mcp: FastMCP) -> None:
     """Register product tools on the MCP server."""
@@ -36,11 +93,20 @@ def register_product_tools(mcp: FastMCP) -> None:
         offset: int = 0,
         order_by: int = 0,
     ) -> dict[str, Any]:
-        """Search for ceramic products. No authentication required.
+        """Search or list ceramic products. No authentication required.
+
+        Product names are often English; search exact product names as-is. The
+        keyword can be empty to list products. For similar products, prefer the
+        known category when available. Common public categories include
+        "pottery", "ceramics", "vases", and "vases_decor". If a literal
+        keyword has no matches, this tool automatically tries a small set of
+        deterministic synonym/category fallbacks such as cup -> mug/pottery and
+        陶瓷 -> pottery/ceramics.
 
         Args:
-            keyword: Search query string.
-            category: Filter by product category.
+            keyword: Search query string. Leave empty to list products.
+            category: Filter by product category (for example: pottery,
+                ceramics, vases, vases_decor).
             offset: Pagination offset (default 0).
             order_by: Sort order: 0=newest first, 1=oldest first.
 
@@ -48,18 +114,35 @@ def register_product_tools(mcp: FastMCP) -> None:
             A dict with a list of matching products.
         """
         client = get_http_client()
-        params: dict[str, Any] = {"offset": offset, "order_by": order_by}
-        if keyword:
-            params["keyword"] = keyword
-        if category:
-            params["category"] = category
+        settings = get_settings()
+        params = _build_search_params(
+            keyword=keyword, category=category, offset=offset, order_by=order_by
+        )
 
         result = await client.call(
-            get_settings().PRODUCT_MS_HTTP,
+            settings.PRODUCT_MS_HTTP,
             "GET",
             f"{PREFIX}/customer/products",
             params=params,
         )
+
+        if keyword and not _product_items(result):
+            for fallback in _fallback_searches(keyword, category):
+                fallback_params = _build_search_params(
+                    keyword=fallback.get("keyword", ""),
+                    category=fallback.get("category", ""),
+                    offset=offset,
+                    order_by=order_by,
+                )
+                result = await client.call(
+                    settings.PRODUCT_MS_HTTP,
+                    "GET",
+                    f"{PREFIX}/customer/products",
+                    params=fallback_params,
+                )
+                if _product_items(result):
+                    break
+
         return with_display_money_fields(result, CUSTOMER_PRICE_KEYS)
 
     @mcp.tool()
