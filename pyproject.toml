@@ -35,7 +35,7 @@ asyncio_mode = "auto"
 
 [tool.uv]
 override-dependencies = [
-    "cryptography>=46.0.7",
+    "cryptography>=46.0.7,<47",
     "python-multipart>=0.0.26",
     "pygments>=2.20.0",
 ]
