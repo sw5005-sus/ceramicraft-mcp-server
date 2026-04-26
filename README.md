@@ -10,11 +10,11 @@ AI Agents ──MCP (Streamable HTTP)──▶ MCP Server ──HTTP──▶ Ba
 
 ### Money values exposed to agents
 
-Backend services store monetary values as integer cents. Customer-facing MCP
-read tools normalize those fields for LLM replies: e.g. a backend `price` of
-`3500` is returned as `price: 35.0`, with `price_cents: 3500` and
-`price_display: "$35.00"` preserved for traceability. Merchant/admin write
-tools still accept cents to match backend API contracts.
+Backend services store monetary values as integer cents in Singapore dollars.
+Customer-facing MCP read tools normalize those fields for LLM replies: e.g. a
+backend `price` of `3500` is returned as `price: 35.0`, with
+`price_cents: 3500` and `price_display: "S$35.00"` preserved for traceability.
+Merchant/admin write tools still accept cents to match backend API contracts.
 
 ### Product (9 tools)
 

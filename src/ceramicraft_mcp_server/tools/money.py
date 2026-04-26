@@ -1,8 +1,8 @@
 """Helpers for presenting money fields to MCP clients.
 
 Product/order services store monetary values as integer cents. Tool results are
-consumed by an LLM and should expose human-readable dollar values while keeping
-raw cents for traceability.
+consumed by an LLM and should expose human-readable Singapore-dollar values
+while keeping raw cents for traceability.
 """
 
 from typing import Any
@@ -31,7 +31,7 @@ def with_display_money_fields(data: Any, money_keys: set[str]) -> Any:
             dollars = round(value / 100, 2)
             normalized[key] = dollars
             normalized.setdefault(f"{key}_cents", value)
-            normalized.setdefault(f"{key}_display", f"${dollars:.2f}")
+            normalized.setdefault(f"{key}_display", f"S${dollars:.2f}")
         else:
             normalized[key] = with_display_money_fields(value, money_keys)
 
